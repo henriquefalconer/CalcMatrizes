@@ -1,22 +1,33 @@
-import MatrixData from './MatrixData';
-import {SystemSolutionType, Operator} from './constants';
-import ScalarOperations from './ScalarOperations';
-import * as ExpressionSimplification from './ExpressionSimplification';
+import MatrixData from "./MatrixData";
+
+import ElementDataWithPosition from "../interfaces/ElementDataWithPosition";
+import MatrixColumnWithPosition from "../interfaces/MatrixColumnWithPosition";
+import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";
+import MatrixDimensions from "../interfaces/MatrixDimensions";
+
+import { SystemSolutionType } from "./constants";
+
+import * as math from "mathjs";
 import {
-  createMatrixElement,
-  ExpressionData,
-  VariableData,
-} from './ExpressionClasses';
-import ElementDataWithPosition from '../interfaces/ElementDataWithPosition';
-import MatrixColumnWithPosition from '../interfaces/MatrixColumnWithPosition';
-import SelectedMatrixElement from '../interfaces/SelectedMatrixElement';
-import MatrixColumnData from '../interfaces/MatrixColumnData';
-import MatrixDimensions from '../interfaces/MatrixDimensions';
-import addErrorTreatment from './addErrorTreatment';
+  add,
+  subtract,
+  multiply,
+  divide,
+  isZero,
+  isOne,
+  zero,
+  plusOne,
+  minusOne,
+  condNeg,
+  simplify,
+  simplifyInversion,
+  hasVariables,
+  parseComma,
+} from "./math";
 
 interface ChangeElementParams extends SelectedMatrixElement {
   matrix: MatrixData;
-  numberWritten: ExpressionData;
+  numberWritten: math.MathNode;
 }
 
 interface JoinEditableAndOriginalMatricesParams extends MatrixDimensions {
@@ -24,43 +35,116 @@ interface JoinEditableAndOriginalMatricesParams extends MatrixDimensions {
   editableMatrix: MatrixData;
 }
 
-interface MultiplyMatrixByScalarParams {
-  matrixA: MatrixData;
-  scalar: ExpressionData;
-}
-
-interface PartialGaussianEliminationParams {
-  matrixA: MatrixData;
-  matrixB: MatrixData;
-  eliminateBelowMainDiagonal?: boolean;
-}
-
 interface FindSolutionMatrixEquationData {
-  eliminatedMatrixA: MatrixData;
-  eliminatedMatrixB: MatrixData;
-  solution: MatrixData | undefined;
+  eliminatedMatrixA: math.MathNode[][];
+  eliminatedMatrixB: math.MathNode[][];
+  solution: math.MathNode[][] | undefined;
   systemSolutionsType: SystemSolutionType;
   lettersUsed: Array<string> | undefined;
 }
 
-interface GetGaussianEliminationData {
-  rowEchelonForm: MatrixData;
-  reducedRowEchelonForm: MatrixData;
-}
-
-interface PartialGaussianEliminationData {
-  matrixA: MatrixData;
-  matrixB: MatrixData;
-  determinant: ExpressionData;
-}
-
 interface TransformEquationToVectorFormData {
-  matrixA: MatrixData;
-  vectorizedX: Array<ExpressionData>;
-  vectorizedB: Array<ExpressionData>;
+  matrixA: math.MathNode[][];
+  vectorizedX: math.MathNode[];
+  vectorizedB: math.MathNode[];
 }
 
 class MatrixOperations {
+  static print(m: math.MathNode[][]) {
+    for (let row of m) {
+      let rowString = "";
+      for (let elem of row) {
+        rowString += ` ${elem} `;
+      }
+      console.log(rowString);
+    }
+    console.log("\n");
+  }
+
+  static compare(m1: math.MathNode[][], m2: math.MathNode[][]) {
+    const [rows, cols] = [m1.length, m1[0].length];
+    const [rows2, cols2] = [m2.length, m2[0].length];
+    if (rows !== rows2 || cols !== cols2) return false;
+    for (let row = 0; row < rows; row++)
+      for (let col = 0; col < cols; col++)
+        if (!m1[row][col].equals(m2[row][col])) return false;
+    return true;
+  }
+
+  static dimensions(
+    m: math.MathNode[][],
+    transposed: boolean = false
+  ): [rows: number, cols: number] {
+    return transposed ? [m[0].length, m.length] : [m.length, m[0].length];
+  }
+
+  static simplify(m: math.MathNode[][]) {
+    const [rows, cols] = [m.length, m[0].length];
+    for (let row = 0; row < rows; row++)
+      for (let col = 0; col < cols; col++) m[row][col] = simplify(m[row][col]);
+    return m;
+  }
+
+  static sum(m1: math.MathNode[][], m2: math.MathNode[][]) {
+    const [rows, cols] = [m1.length, m1[0].length];
+    const m = MatrixOperations.empty(rows, cols);
+    for (let row = 0; row < rows; row++)
+      for (let col = 0; col < cols; col++)
+        m[row][col] = simplify(add(m1[row][col], m2[row][col]));
+    return m;
+  }
+
+  static subtract(m1: math.MathNode[][], m2: math.MathNode[][]) {
+    const [rows, cols] = [m1.length, m1[0].length];
+    const m = MatrixOperations.empty(rows, cols);
+    for (let row = 0; row < rows; row++)
+      for (let col = 0; col < cols; col++)
+        m[row][col] = simplify(subtract(m1[row][col], m2[row][col]));
+    return m;
+  }
+
+  static multiply(m1: math.MathNode[][], m2: math.MathNode[][]) {
+    const [rows1, cols1] = [m1.length, m1[0].length];
+    const cols2 = m2[0].length;
+    const m = MatrixOperations.empty(rows1, cols2);
+    let adder: math.MathNode;
+    for (let row = 0; row < rows1; row++) {
+      for (let col = 0; col < cols2; col++) {
+        adder = zero;
+        for (let i = 0; i < cols1; i++)
+          adder = add(adder, multiply(m1[row][i], m2[i][col]));
+        m[row][col] = simplify(adder);
+      }
+    }
+    return m;
+  }
+
+  static scalarMultiply(m: math.MathNode[][], s: math.MathNode) {
+    const [rows, cols] = [m.length, m[0].length];
+    const res = MatrixOperations.empty(rows, cols);
+    for (let row = 0; row < rows; row++)
+      for (let col = 0; col < cols; col++)
+        res[row][col] = simplify(multiply(m[row][col], s));
+    return res;
+  }
+
+  static transpose(m: math.MathNode[][]) {
+    const [rows, cols] = [m.length, m[0].length];
+    const res = MatrixOperations.empty(cols, rows);
+    for (let row = 0; row < rows; row++)
+      for (let col = 0; col < cols; col++) res[col][row] = m[row][col];
+    return res;
+  }
+
+  static parseComma(m: math.MathNode[][]) {
+    const [rows, cols] = [m.length, m[0].length];
+    const res = MatrixOperations.empty(rows, cols);
+    for (let row = 0; row < rows; row++)
+      for (let col = 0; col < cols; col++)
+        res[row][col] = parseComma(m[row][col]);
+    return res;
+  }
+
   static changeElement({
     matrix,
     column,
@@ -68,24 +152,19 @@ class MatrixOperations {
     numberWritten,
   }: ChangeElementParams) {
     let matrixDataCopy = [...matrix.data];
-
     matrixDataCopy[row][column] = numberWritten;
-
     return new MatrixData(matrixDataCopy);
   }
 
   static insertElementsPosition(
-    matrix: MatrixData,
+    matrix: MatrixData
   ): Array<MatrixColumnWithPosition> {
     let positionMatrix: Array<MatrixColumnWithPosition> = [];
 
-    if (!matrix) {
-      return positionMatrix;
-    }
+    if (!matrix) return positionMatrix;
 
     for (let column = matrix.dimensions().columns - 1; column >= 0; column--) {
       let positionMatrixColumn: Array<ElementDataWithPosition> = [];
-
       for (let row = matrix.dimensions().rows - 1; row >= 0; row--) {
         positionMatrixColumn.push({
           number: matrix.data[row][column],
@@ -93,7 +172,6 @@ class MatrixOperations {
           column,
         });
       }
-
       positionMatrix.push({
         data: positionMatrixColumn,
         column,
@@ -103,51 +181,26 @@ class MatrixOperations {
     return positionMatrix;
   }
 
-  static copyMatrixData(matrix: MatrixData) {
-    let copyData = [];
-
-    for (let row = 0; row < matrix.dimensions().rows; row++) {
-      let copyDataRow = [];
-
-      for (let column = 0; column < matrix.dimensions().columns; column++) {
-        copyDataRow.push(matrix.data[row][column]);
-      }
-
-      copyData.push(copyDataRow);
-    }
-
-    return new MatrixData(copyData);
+  static copyMatrixData(m: MatrixData) {
+    return new MatrixData(MatrixOperations.clone(m.data));
   }
 
-  static minDimensions = (matrix1: MatrixData, matrix2: MatrixData) => ({
-    rows: Math.min(matrix1.dimensions().rows, matrix2.dimensions().rows),
-    columns: Math.min(
-      matrix1.dimensions().columns,
-      matrix2.dimensions().columns,
-    ),
-  });
-
-  static maxDimensions = (matrix1: MatrixData, matrix2: MatrixData) => ({
-    rows: Math.max(matrix1.dimensions().rows, matrix2.dimensions().rows),
-    columns: Math.max(
-      matrix1.dimensions().columns,
-      matrix2.dimensions().columns,
-    ),
-  });
+  static clone(m: math.MathNode[][]) {
+    return m.map((row) => row.map((node) => node.clone()));
+  }
 
   static joinElements = (
     matrix1: MatrixData,
     matrix2: MatrixData,
     row: number,
-    column: number,
+    column: number
   ) => {
     const joinedElement =
       (matrix1.data[row] && matrix1.data[row][column]) ||
-      (!matrix1.hasPosition({row, column}) &&
+      (!matrix1.hasPosition({ row, column }) &&
         matrix2.data[row] &&
         matrix2.data[row][column]) ||
       0;
-
     return joinedElement === undefined ? 0 : joinedElement;
   };
 
@@ -161,18 +214,15 @@ class MatrixOperations {
 
     for (let row = 0; row < rows; row++) {
       let fixedRow = [];
-
       for (let column = 0; column < columns; column++) {
         const joinedElement = MatrixOperations.joinElements(
           editableMatrix,
           originalMatrix,
           row,
-          column,
+          column
         );
-
         fixedRow.push(joinedElement);
       }
-
       joined.push(fixedRow);
     }
 
@@ -191,328 +241,53 @@ class MatrixOperations {
         editableMatrix,
         rows,
         columns,
-      }),
+      })
     );
   }
 
-  static getTransposedDimensions(matrix: MatrixData) {
-    return MatrixOperations.transpose(matrix).dimensions();
-  }
-
-  static compareMatrices(matrix1: MatrixData, matrix2: MatrixData) {
-    if (
-      matrix1.dimensions().rows !== matrix2.dimensions().rows ||
-      matrix1.dimensions().columns !== matrix2.dimensions().columns
-    ) {
-      return false;
-    }
-
-    for (let row = 0; row < matrix1.dimensions().rows; row++) {
-      for (let column = 0; column < matrix1.dimensions().columns; column++) {
-        if (
-          matrix1.data[row][column]?.commaStringify() !==
-          matrix2.data[row][column]?.commaStringify()
-        ) {
-          return false;
-        }
-      }
-    }
-
+  static isEmpty(m: math.MathNode[][]) {
+    const [rows, cols] = [m.length, m[0].length];
+    for (let row = 0; row < rows; row++)
+      for (let col = 0; col < cols; col++)
+        if (!isZero(m[row][col])) return false;
     return true;
   }
 
-  static isMatrixFull(matrix: MatrixData) {
-    if (!matrix) {
-      return false;
-    }
-
-    for (let row = 0; row < matrix.dimensions().rows; row++) {
-      for (let column = 0; column < matrix.dimensions().columns; column++) {
-        if (Number.isNaN(matrix.data[row][column])) {
-          return false;
-        }
-      }
-    }
-
-    return true;
+  static isSquare(m: math.MathNode[][]) {
+    return m.length === m[0].length;
   }
 
-  static isMatrixEmpty(matrix: MatrixData) {
-    if (!matrix) {
-      return false;
-    }
-
-    for (let row = 0; row < matrix.dimensions().rows; row++) {
-      for (let column = 0; column < matrix.dimensions().columns; column++) {
-        if (matrix.data[row][column]?.commaStringify() !== '0') {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  }
-
-  static isMatrixSquare(matrix: MatrixData) {
-    return matrix && matrix.dimensions().rows === matrix.dimensions().columns;
-  }
-
-  static printMatrix(matrix: MatrixData) {
-    for (let row of matrix.data) {
-      let rowString = '';
-
-      for (let elem of row) {
-        rowString += ` ${elem.stringify()} `;
-      }
-
-      console.log(rowString);
-    }
-
-    console.log('\n');
-  }
-
-  // static smartToFixedOnMatrix(matrixData) {
-  //     let fixed = [];
-
-  //     for (let row = 0; row < matrixData.length; row++) {
-  //         let fixedRow = [];
-  //         for (let column = 0; column < matrixData[0].length; column++) {
-  //             fixedRow.push(smartToFixed(matrixData[row][column]));
-  //         }
-  //         fixed.push(fixedRow);
-  //     }
-
-  //     return fixed;
-  // }
-
-  static applyFrescuresToMatrixData(
-    matrixData: Array<Array<ExpressionData | number>>,
-  ): Array<MatrixColumnData> {
-    if (!matrixData) {
-      return [];
-    }
-
-    let converted = [];
-
-    for (let row = 0; row < matrixData.length; row++) {
-      let convertedRow = [];
-
-      for (let column = 0; column < matrixData[0].length; column++) {
-        let element = matrixData[row][column];
-
-        if (!(element instanceof ExpressionData)) {
-          // console.log('applyFrescuresToMatrixData: elemento não é um ElementData: ' + element);
-          element = createMatrixElement({
-            scalar: element,
-          });
-        }
-
-        // if (!element.unfilteredString)
-        //     element = Number.parseFloat(element.scalar)
-
-        convertedRow.push(element);
-      }
-
-      converted.push(convertedRow);
-    }
-
-    return converted;
-  }
-
-  static emptyMatrix({rows, columns}: MatrixDimensions) {
+  static emptyMatrix({ rows, columns }: MatrixDimensions) {
     let matrix = [];
 
     for (let row = 0; row < rows; row++) {
       let matrixRow = [];
-
       for (let column = 0; column < columns; column++) {
         matrixRow.push(0);
       }
-
       matrix.push(matrixRow);
     }
 
     return new MatrixData(matrix);
   }
 
-  static identity(dimension: number) {
-    let identity = [];
-
-    for (let row = 0; row < dimension; row++) {
-      let identityRow = [];
-
-      for (let column = 0; column < dimension; column++) {
-        identityRow.push(row === column ? 1 : 0);
-      }
-
-      identity.push(identityRow);
-    }
-
-    return new MatrixData(identity);
-  }
-
-  static sum(matrixA: MatrixData, matrixB: MatrixData) {
-    let matrix = [];
-
-    for (let row = 0; row < matrixA.dimensions().rows; row++) {
-      let matrixRow = [];
-
-      for (let column = 0; column < matrixA.dimensions().columns; column++) {
-        matrixRow.push(
-          ExpressionSimplification.varOperation(
-            matrixA.data[row][column],
-            Operator.Add,
-            matrixB.data[row][column],
-          ),
-        );
-      }
-
-      matrix.push(matrixRow);
-    }
-
-    return new MatrixData(matrix);
-  }
-
-  static subtract(matrixA: MatrixData, matrixB: MatrixData) {
-    let matrix = [];
-
-    for (let row = 0; row < matrixA.dimensions().rows; row++) {
-      let matrixRow = [];
-
-      for (let column = 0; column < matrixA.dimensions().columns; column++) {
-        matrixRow.push(
-          ExpressionSimplification.varOperation(
-            matrixA.data[row][column],
-            Operator.Subtract,
-            matrixB.data[row][column],
-          ),
-        );
-      }
-
-      matrix.push(matrixRow);
-    }
-
-    return new MatrixData(matrix);
-  }
-
-  static multiplyMatrix(matrixA: MatrixData, matrixB: MatrixData) {
-    let matrix = [];
-
-    for (let row = 0; row < matrixA.dimensions().rows; row++) {
-      let matrixRow = [];
-
-      for (let column = 0; column < matrixB.dimensions().columns; column++) {
-        let newElement = createMatrixElement({
-          scalar: 0,
-        });
-
-        for (let index = 0; index < matrixA.dimensions().columns; index++) {
-          newElement = ExpressionSimplification.varOperation(
-            ExpressionSimplification.varOperation(
-              matrixA.data[row][index],
-              Operator.Multiply,
-              matrixB.data[index][column],
-            ),
-            Operator.Add,
-            newElement,
-          );
-        }
-
-        matrixRow.push(newElement);
-      }
-
-      matrix.push(matrixRow);
-    }
-
-    return new MatrixData(matrix);
-  }
-
-  static multiplyMatrixByScalar({
-    matrixA,
-    scalar,
-  }: MultiplyMatrixByScalarParams) {
-    let matrix = [];
-
-    for (let row = 0; row < matrixA.dimensions().rows; row++) {
-      let matrixRow = [];
-
-      for (let column = 0; column < matrixA.dimensions().columns; column++) {
-        matrixRow.push(
-          ExpressionSimplification.varOperation(
-            matrixA.data[row][column],
-            Operator.Multiply,
-            scalar,
-          ),
-        );
-      }
-
-      matrix.push(matrixRow);
-    }
-
-    return new MatrixData(matrix);
-  }
-
-  static transpose(matrix: MatrixData) {
-    let transposedData = [];
-
-    for (let column = 0; column < matrix.dimensions().columns; column++) {
-      let transposedRow = [];
-
-      for (let row = 0; row < matrix.dimensions().rows; row++) {
-        transposedRow.push(matrix.data[row][column]);
-      }
-
-      transposedData.push(transposedRow);
-    }
-
-    return new MatrixData(transposedData);
-  }
-
-  static invert(matrix: MatrixData) {
-    function _invert() {
-      return MatrixOperations.bareissAlgorithm(
-        matrix,
-        MatrixOperations.identity(matrix.dimensions().rows),
-      ).matrixB;
-    }
-
-    return addErrorTreatment(_invert, 'inverted');
-  }
-
-  static determinant(matrix: MatrixData) {
-    return addErrorTreatment(
-      () =>
-        MatrixOperations.bareissAlgorithm(
-          matrix,
-          MatrixOperations.identity(matrix.dimensions().rows),
-          false,
-          true,
-        ).determinant,
-      'determinant',
+  static empty(rows: number, cols: number) {
+    return Array.from(
+      { length: rows },
+      () => Array.from({ length: cols }, () => zero) as math.MathNode[]
     );
   }
 
-  /*
-        Escalona a porcao, seja abaixo ou acima, da diagonal principal
-        de matrixA, assim como retorna o determinante da matriz.
-        OBS: verticalElimination deve ser verdadeiro se a ordem da equação a ser escalonada é X*A=B.
-    */
-  static partialGaussianElimination({
-    matrixA,
-    matrixB,
-    eliminateBelowMainDiagonal = true,
-  }: PartialGaussianEliminationParams) {
-    let _matrixA = MatrixOperations.copyMatrixData(matrixA);
-    let _matrixB = MatrixOperations.copyMatrixData(matrixB);
+  // Escalona a porcao, seja abaixo ou acima, da diagonal principal
+  // de m1, assim como retorna o determinante da matriz.
+  static partialGaussianElimination(
+    mA: math.MathNode[][],
+    eliminateBelowMainDiagonal = true
+  ) {
+    const [rowsA, colsA] = [mA.length, mA[0].length];
 
-    MatrixOperations.printMatrix(_matrixA);
+    const minDimensionsA = Math.min(rowsA, colsA);
 
-    const dimensionsA = _matrixA.dimensions();
-    const dimensionsB = _matrixB.dimensions();
-
-    const minDimensionsA = Math.min(dimensionsA.rows, dimensionsA.columns);
-
-    let determinant = createMatrixElement({scalar: 1});
     let noPivotOnColumn = false;
 
     for (
@@ -520,588 +295,413 @@ class MatrixOperations {
       pivotColumn != (eliminateBelowMainDiagonal ? minDimensionsA : -1);
       pivotColumn += eliminateBelowMainDiagonal ? 1 : -1
     ) {
-      let pivot = _matrixA.data[pivotColumn][pivotColumn];
+      let pivot = mA[pivotColumn][pivotColumn];
 
       // Se estiver na eliminação acima da diagonal e
       // encontrar um pivot zero, simplesmente pular para o próximo
       // (permite deixar da forma escalonada reduzida):
-      if (eliminateBelowMainDiagonal || !pivot.isZero) {
-        if (pivot.isZero) {
+      if (eliminateBelowMainDiagonal || !isZero(pivot)) {
+        if (isZero(pivot)) {
           let testRow = pivotColumn + 1;
-
           while (true) {
             // Se houver uma coluna sem pivot em uma matriz escalonada reduzida, o determinante dela é nulo:
-            if (testRow === dimensionsA.columns) {
+            if (testRow === colsA) {
               noPivotOnColumn = true;
-
               break;
             }
 
-            let possibleNewPivot = _matrixA.data[testRow][pivotColumn];
-
-            if (!possibleNewPivot.isZero) {
-              break;
-            }
+            if (!isZero(mA[testRow][pivotColumn])) break;
 
             testRow++;
           }
 
           if (!noPivotOnColumn) {
-            let _matrixACopy = MatrixOperations.copyMatrixData(_matrixA);
-            let _matrixBCopy = MatrixOperations.copyMatrixData(_matrixB);
+            [mA[pivotColumn], mA[testRow]] = [mA[testRow], mA[pivotColumn]];
 
-            _matrixA.data[pivotColumn] = _matrixACopy.data[testRow];
-
-            _matrixA.data[testRow] = _matrixACopy.data[pivotColumn];
-
-            _matrixB.data[pivotColumn] = _matrixBCopy.data[testRow];
-
-            _matrixB.data[testRow] = _matrixBCopy.data[pivotColumn];
-
-            pivot = _matrixA.data[pivotColumn][pivotColumn];
-
-            determinant = ExpressionSimplification.varOperation(
-              determinant,
-              Operator.Multiply,
-              createMatrixElement({scalar: -1}),
-            );
+            pivot = mA[pivotColumn][pivotColumn];
           }
         }
 
         if (!noPivotOnColumn) {
-          console.log({pivot: pivot.stringify(), pivotColumn});
+          if (!isOne(pivot)) {
+            for (let index = 0; index < colsA; index++)
+              mA[pivotColumn][index] = divide(mA[pivotColumn][index], pivot);
 
-          if (!pivot.isOne) {
-            for (let index = 0; index < dimensionsA.columns; index++) {
-              _matrixA.data[pivotColumn][
-                index
-              ] = ExpressionSimplification.varOperation(
-                _matrixA.data[pivotColumn][index],
-                Operator.Divide,
-                pivot,
-              );
-            }
-
-            console.log('STARTING MATRIX B DIVISION BY PIVOT');
-
-            for (let index = 0; index < dimensionsB.columns; index++) {
-              _matrixB.data[pivotColumn][
-                index
-              ] = ExpressionSimplification.varOperation(
-                _matrixB.data[pivotColumn][index],
-                Operator.Divide,
-                pivot,
-              );
-            }
-
-            console.log('ENDED MATRIX B DIVISION BY PIVOT');
-
-            determinant = ExpressionSimplification.varOperation(
-              determinant,
-              Operator.Multiply,
-              pivot,
-            );
-
-            //if (showSteps)
-            //    exibicao_passos_resolver_equacao_matricial(_matrixA, _matrixB, pivot, pivotColumn+1, pivotColumn+1, verticalElimination, None)
-
-            pivot = _matrixA.data[pivotColumn][pivotColumn];
+            pivot = mA[pivotColumn][pivotColumn];
           }
 
           for (
             let index = eliminateBelowMainDiagonal ? 0 : pivotColumn - 1;
             index !=
-            (eliminateBelowMainDiagonal
-              ? dimensionsA.rows - pivotColumn - 1
-              : -1);
+            (eliminateBelowMainDiagonal ? rowsA - pivotColumn - 1 : -1);
             index += eliminateBelowMainDiagonal ? 1 : -1
           ) {
             let verticalIndex: number;
-
-            if (eliminateBelowMainDiagonal) {
+            if (eliminateBelowMainDiagonal)
               verticalIndex = index + pivotColumn + 1;
-            } else {
-              verticalIndex = index;
-            }
+            else verticalIndex = index;
 
-            const element = _matrixA.data[verticalIndex][pivotColumn];
-
-            const eliminationFactor = ExpressionSimplification.varOperation(
-              ExpressionSimplification.varOperation(
-                element,
-                Operator.Multiply,
-                createMatrixElement({scalar: -1}),
-              ),
-              Operator.Divide,
-              pivot,
+            const element = mA[verticalIndex][pivotColumn];
+            const eliminationFactor = divide(
+              multiply(element, minusOne),
+              pivot
             );
 
-            MatrixOperations.printMatrix(_matrixA);
-
-            console.log({
-              element: element.stringify(),
-              pivot: pivot.stringify(),
-              eliminationFactor: eliminationFactor.stringify(),
-            });
-
             for (
               let horizontalIndex = 0;
-              horizontalIndex < dimensionsA.columns;
+              horizontalIndex < colsA;
               horizontalIndex++
             ) {
-              _matrixA.data[verticalIndex][
-                horizontalIndex
-              ] = ExpressionSimplification.varOperation(
-                _matrixA.data[verticalIndex][horizontalIndex],
-                Operator.Add,
-                ExpressionSimplification.varOperation(
-                  eliminationFactor,
-                  Operator.Multiply,
-                  _matrixA.data[pivotColumn][horizontalIndex],
-                ),
+              mA[verticalIndex][horizontalIndex] = add(
+                multiply(eliminationFactor, mA[pivotColumn][horizontalIndex]),
+                mA[verticalIndex][horizontalIndex]
               );
             }
-
-            console.log('STARTING MATRIX B MERGE ROWS');
-
-            for (
-              let horizontalIndex = 0;
-              horizontalIndex < dimensionsB.columns;
-              horizontalIndex++
-            ) {
-              _matrixB.data[verticalIndex][
-                horizontalIndex
-              ] = ExpressionSimplification.varOperation(
-                _matrixB.data[verticalIndex][horizontalIndex],
-                Operator.Add,
-                ExpressionSimplification.varOperation(
-                  eliminationFactor,
-                  Operator.Multiply,
-                  _matrixB.data[pivotColumn][horizontalIndex],
-                ),
-              );
-            }
-
-            console.log('ENDED MATRIX B MERGE ROWS');
-
-            //if (showSteps)
-            //    exibicao_passos_resolver_equacao_matricial(_matrixA, _matrixB, eliminationFactor, pivotColumn+1, verticalIndex+1, verticalElimination, None)
           }
 
-          MatrixOperations.printMatrix(_matrixA);
+          MatrixOperations.simplify(mA);
         }
-      } else {
-        determinant = createMatrixElement({scalar: 0});
       }
     }
 
-    if (noPivotOnColumn) {
-      determinant = createMatrixElement({
-        scalar: 0,
-      });
-    }
-
-    console.log({determinant});
-
-    console.log({determinantString: determinant.stringify()});
-
-    return {
-      matrixA: MatrixOperations.copyMatrixData(_matrixA),
-      matrixB: MatrixOperations.copyMatrixData(_matrixB),
-      determinant,
-    };
-    // return arredondamento_na_raca(determinant, 6);
+    return mA;
   }
 
-  static joinMatrixRows(matrixA: MatrixData, matrixB: MatrixData) {
-    return new MatrixData(
-      matrixA.data.map((row, index) => [...row, ...matrixB.data[index]]),
+  static getGaussianElimination(
+    m: math.MathNode[][]
+  ): [ref: math.MathNode[][], rref: math.MathNode[][]] {
+    const ref = MatrixOperations.partialGaussianElimination(m, true);
+    const rref = MatrixOperations.partialGaussianElimination(
+      MatrixOperations.clone(ref),
+      false
     );
+    return [ref, rref];
   }
 
-  static separateMatrixRows(matrix: MatrixData, columnsA: number) {
-    const [matrixA, matrixB] = matrix.data.reduce(
-      (matrixDatasAccumulator, rowData, rowIndex) => {
-        let [matrixA, matrixB] = matrixDatasAccumulator;
-
-        matrixA.data[rowIndex] = rowData.slice(0, columnsA);
-
-        matrixB.data[rowIndex] = rowData.slice(
-          columnsA,
-          matrix.dimensions().columns,
-        );
-
-        return [matrixA, matrixB];
+  static separateMatrixRows(m: math.MathNode[][], colsA: number) {
+    const [rows, cols] = [m.length, m[0].length];
+    const [m1, m2] = m.reduce(
+      (acc, row, i) => {
+        let [m1, m2] = acc;
+        m1[i] = row.slice(0, colsA);
+        m2[i] = row.slice(colsA, cols);
+        return [m1, m2];
       },
       [
-        MatrixOperations.emptyMatrix({
-          rows: matrix.dimensions().rows,
-          columns: columnsA,
-        }),
-        MatrixOperations.emptyMatrix({
-          rows: matrix.dimensions().rows,
-          columns: matrix.dimensions().columns - columnsA,
-        }),
-      ],
+        MatrixOperations.empty(rows, colsA),
+        MatrixOperations.empty(rows, cols - colsA),
+      ]
     );
-
-    return [matrixA, matrixB];
+    return [m1, m2];
   }
 
-  static transformMatrixToReducedRowEchelonForm(matrix: MatrixData) {
-    const {rows, columns} = matrix.dimensions();
+  static transformMatrixToReducedRowEchelonForm(m: math.MathNode[][]) {
+    const [rows, cols] = [m.length, m[0].length];
+    const minDim = Math.min(rows, cols);
+    let pivot: math.MathNode;
+    for (let row = 0; row < minDim; row++) {
+      pivot = m[row][row];
+      if (!isZero(pivot)) {
+        m[row][row] = plusOne;
+        for (let col = row + 1; col < cols; col++)
+          m[row][col] = divide(m[row][col], pivot);
+      }
+    }
+    return m;
+  }
 
-    const minDimensions = Math.min(rows, columns);
+  static recursiveDet(m: math.MathNode[][]): math.MathNode {
+    const size = m.length;
+    if (size === 1) return m[0][0];
+    let pivot: math.MathNode;
+    let subM: math.MathNode[][];
+    let d = zero;
+    let recD: math.MathNode;
+    for (let row = 0; row < size; row++) {
+      pivot = m[row][0];
+      subM = m
+        .filter((_, i) => i !== row)
+        .map((row) => row.filter((_, i) => i > 0));
+      recD = MatrixOperations.recursiveDet(subM);
+      d = add(d, condNeg(multiply(recD, pivot), row % 2 !== 0));
+    }
+    return d;
+  }
 
-    for (let row = 0; row < minDimensions; row++) {
-      const pivot = matrix.data[row][row];
-
-      if (!pivot.isZero) {
-        for (let column = row; column < matrix.dimensions().columns; column++) {
-          matrix.data[row][column] = ExpressionSimplification.varOperation(
-            matrix.data[row][column],
-            Operator.Divide,
-            pivot,
-          );
+  static rmvDivisor(
+    m: math.MathNode[][]
+  ): [noDiv: math.MathNode[][], div: math.MathNode] {
+    const [rows, cols] = [m.length, m[0].length];
+    const noDiv = MatrixOperations.empty(rows, cols);
+    let node: math.MathNode;
+    let divs: math.MathNode[] = [];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        node = m[row][col];
+        if (
+          node.isOperatorNode &&
+          node.op === "/" &&
+          node.args?.[1].isOperatorNode
+        ) {
+          const div = node.args[1];
+          if (divs.every((d) => !d.equals(div))) divs.push(node.args[1]);
         }
       }
     }
+    let multiplyDivs: math.MathNode[];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        node = m[row][col];
+        multiplyDivs = divs;
+        if (
+          m[row][col].isOperatorNode &&
+          m[row][col].op === "/" &&
+          m[row][col].args?.[1].isOperatorNode
+        ) {
+          node = m[row][col].args?.[0] as math.MathNode;
+          multiplyDivs = divs.filter(
+            (d) => !d.equals((m[row][col].args as math.MathNode[])[1])
+          );
+        }
+        noDiv[row][col] = multiplyDivs.length
+          ? multiply(node, ...multiplyDivs)
+          : node;
+      }
+    }
+    return [noDiv, divs.length > 1 ? multiply(...divs) : divs?.[0] ?? plusOne];
   }
 
-  static bareissAlgorithm(
-    matrixA: MatrixData,
-    matrixB: MatrixData,
-    forceReducedRowEchelonForm: boolean = false,
-    exitOnDeterminantFound: boolean = false,
-  ) {
-    let joinedMatrix = MatrixOperations.joinMatrixRows(matrixA, matrixB);
+  // Adjugate matrix for inverse matrix calculation:
+  // https://math.stackexchange.com/questions/1149957/find-the-inverse-of-a-matrix-with-an-unknown-variable
+  static adjTrans(m: math.MathNode[][]): math.MathNode[][] {
+    const size = m.length;
+    let subM: math.MathNode[][];
+    let recD: math.MathNode;
+    const adjTrans = MatrixOperations.empty(size, size);
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        subM = m
+          .filter((_, i) => i !== row)
+          .map((row) => row.filter((_, i) => i !== col));
+        recD = MatrixOperations.recursiveDet(subM);
+        adjTrans[col][row] = condNeg(recD, (row + col) % 2 !== 0);
+      }
+    }
+    return adjTrans;
+  }
+
+  static transformAdjTransToInv(adjTrans: math.MathNode[][], d: math.MathNode) {
+    const size = adjTrans.length;
+    for (let row = 0; row < size; row++)
+      for (let col = 0; col < size; col++)
+        adjTrans[row][col] = simplifyInversion(
+          divide(simplify(adjTrans[row][col]), d)
+        );
+    return adjTrans;
+  }
+
+  static bareissAlgorithm(m1: math.MathNode[][], m2: math.MathNode[][]) {
+    let m = m1.map((row, i) => [...row, ...m2[i]]);
 
     // Aqui uma página legal para entender o funcionamento do algoritmo de Bareiss:
     // https://matrixcalc.org/en/#determinant%28%7B%7B1,4,7%7D,%7B2,5,8%7D,%7B3,6,10%7D%7D%29
     // Obs.: Para encontrar a explicação, escreva uma matriz, clique no botão de achar
     // o determinante e aperte "Details (Montante's method (Bareiss algorithm))"
-
     const applyBareissFormula = (
-      entryMatrix: MatrixData,
-      exitMatrix: MatrixData,
+      entryMatrix: math.MathNode[][],
+      exitMatrix: math.MathNode[][],
       i: number,
       j: number,
-      r: number,
+      r: number
     ) => {
-      exitMatrix.data[i][j] = ExpressionSimplification.varOperation(
-        ExpressionSimplification.varOperation(
-          ExpressionSimplification.varOperation(
-            entryMatrix.data[r][r],
-            Operator.Multiply,
-            entryMatrix.data[i][j],
-          ),
-          Operator.Subtract,
-          ExpressionSimplification.varOperation(
-            entryMatrix.data[r][j],
-            Operator.Multiply,
-            entryMatrix.data[i][r],
-          ),
-        ),
-        Operator.Divide,
-        r - 1 < 0
-          ? createMatrixElement({scalar: 1})
-          : entryMatrix.data[r - 1][r - 1],
+      const subtraction = subtract(
+        multiply(entryMatrix[r][r], entryMatrix[i][j]),
+        multiply(entryMatrix[r][j], entryMatrix[i][r])
       );
+
+      const result =
+        r - 1 < 0
+          ? subtraction
+          : divide(subtraction, entryMatrix[r - 1][r - 1]);
+
+      exitMatrix[i][j] = result;
     };
 
-    console.log('INICIO BAREISS');
+    const cols1 = m1[0].length;
+    const [rows, cols] = [m.length, m[0].length];
+    const minDim = Math.min(rows, cols);
 
     let noPivotOnColumn = false;
-    let determinant: ExpressionData | null = null;
+    let testRow: number;
+    let pivot: math.MathNode;
+    let mCopy: math.MathNode[][];
 
-    const {rows, columns} = joinedMatrix.dimensions();
+    for (let i = 0; i < minDim; i++) {
+      pivot = m[i][i];
 
-    const minDimensions = Math.min(rows, columns);
-
-    for (let pivotIndex = 0; pivotIndex < minDimensions; pivotIndex++) {
-      const pivot = joinedMatrix.data[pivotIndex][pivotIndex];
-
-      if (pivot.isZero) {
-        let testRow = pivotIndex + 1;
+      if (isZero(pivot)) {
+        testRow = i + 1;
 
         while (true) {
           // Se houver uma coluna sem pivot em uma matriz escalonada reduzida, o determinante dela é nulo:
-          if (testRow === joinedMatrix.dimensions().rows) {
+          if (testRow === rows) {
             noPivotOnColumn = true;
-
             break;
           }
 
-          const possibleNewPivot = joinedMatrix.data[testRow][pivotIndex];
-
-          if (!possibleNewPivot.isZero) {
-            break;
-          }
+          if (!isZero(m[testRow][i])) break;
 
           testRow++;
         }
 
-        if (!noPivotOnColumn) {
-          let joinedMatrixTempCopy = MatrixOperations.copyMatrixData(
-            joinedMatrix,
-          );
-
-          joinedMatrix.data[pivotIndex] = joinedMatrixTempCopy.data[testRow];
-
-          joinedMatrix.data[testRow] = joinedMatrixTempCopy.data[pivotIndex];
-        }
+        if (!noPivotOnColumn) [m[i], m[testRow]] = [m[testRow], m[i]];
       }
-
-      MatrixOperations.printMatrix(joinedMatrix);
 
       if (!noPivotOnColumn) {
-        let joinedMatrixCopy = MatrixOperations.copyMatrixData(joinedMatrix);
+        mCopy = MatrixOperations.clone(m);
 
-        for (let row = 0; row < joinedMatrix.dimensions().rows; row++) {
-          for (
-            let column = 0;
-            column < joinedMatrix.dimensions().columns;
-            column++
-          ) {
-            if (row !== pivotIndex) {
-              applyBareissFormula(
-                joinedMatrix,
-                joinedMatrixCopy,
-                row,
-                column,
-                pivotIndex,
-              );
-            }
-          }
-        }
+        for (let row = 0; row < rows; row++)
+          for (let col = 0; col < cols; col++)
+            if (row !== i) applyBareissFormula(m, mCopy, row, col, i);
 
-        joinedMatrix = joinedMatrixCopy;
+        m = mCopy;
 
-        console.log('NOVO PASSO BAREISS');
-
-        MatrixOperations.printMatrix(joinedMatrix);
-      }
-
-      if (pivotIndex === joinedMatrix.dimensions().rows - 2) {
-        if (MatrixOperations.isMatrixSquare(matrixA)) {
-          if (noPivotOnColumn) {
-            determinant = createMatrixElement({
-              scalar: 0,
-            });
-          } else {
-            determinant =
-              joinedMatrix.data[matrixA.dimensions().rows - 1][
-                matrixA.dimensions().columns - 1
-              ];
-          }
-        }
-
-        console.log('BAREISS DETERMINANT');
-
-        console.log({determinant: determinant?.stringify()});
-
-        if (exitOnDeterminantFound) {
-          return {
-            matrixA,
-            matrixB,
-            determinant,
-          };
-        }
+        MatrixOperations.simplify(m);
       }
     }
 
-    if (!noPivotOnColumn || forceReducedRowEchelonForm) {
-      MatrixOperations.transformMatrixToReducedRowEchelonForm(joinedMatrix);
-    }
-
-    let [newMatrixA, newMatrixB] = MatrixOperations.separateMatrixRows(
-      joinedMatrix,
-      matrixA.dimensions().columns,
+    [m1, m2] = MatrixOperations.separateMatrixRows(
+      MatrixOperations.transformMatrixToReducedRowEchelonForm(
+        MatrixOperations.simplify(m)
+      ),
+      cols1
     );
 
-    console.log('FIM BAREISS');
-
-    MatrixOperations.printMatrix(joinedMatrix);
-
-    MatrixOperations.printMatrix(newMatrixA);
-
-    MatrixOperations.printMatrix(newMatrixB);
-
     return {
-      matrixA: newMatrixA,
-      matrixB: newMatrixB,
-      determinant,
+      matrixA: m1,
+      matrixB: m2,
     };
   }
 
-  static getGaussianElimination(matrix: MatrixData) {
-    function _getGaussianElimination(): GetGaussianEliminationData {
-      const {
-        matrixA: rowEchelonForm,
-      } = MatrixOperations.partialGaussianElimination({
-        matrixA: matrix,
-        matrixB: MatrixOperations.emptyMatrix({
-          rows: matrix.dimensions().rows,
-          columns: 1,
-        }),
-        eliminateBelowMainDiagonal: true,
-      });
-
-      const {
-        matrixA: reducedRowEchelonForm,
-      } = MatrixOperations.partialGaussianElimination({
-        matrixA: rowEchelonForm,
-        matrixB: MatrixOperations.emptyMatrix({
-          rows: matrix.dimensions().rows,
-          columns: 1,
-        }),
-        eliminateBelowMainDiagonal: false,
-      });
-
-      return {
-        rowEchelonForm,
-        reducedRowEchelonForm,
-      };
-    }
-
-    return addErrorTreatment(_getGaussianElimination, 'gaussianElimination');
-  }
-
-  /*
-        Resolve o sistema A * X = B, quando a incognita procede a matriz A conhecida,
-        ou o sistema X * A = B, quando a incognita precede a matriz A conhecida.
-        OBS: verticalElimination deve ser verdadeiro se a ordem da equação a ser escalonada é X*A=B.
-    */
   static findSolutionForMatrixEquation(
-    matrixA: MatrixData,
-    matrixB: MatrixData,
-    verticalElimination: boolean = false,
+    m1: math.MathNode[][],
+    m2: math.MathNode[][],
+    vertElim: boolean = false
   ) {
-    function _findSolutionForMatrixEquation(): FindSolutionMatrixEquationData {
-      let _matrixA = matrixA;
-      let _matrixB = matrixB;
+    if (vertElim) [m1, m2] = [m1, m2].map(MatrixOperations.transpose);
 
-      if (verticalElimination) {
-        _matrixA = MatrixOperations.transpose(matrixA);
+    const [cols1, cols2] = [m1[0].length, m2[0].length];
 
-        _matrixB = MatrixOperations.transpose(matrixB);
-      }
+    let {
+      matrixA: eliminatedMatrixA,
+      matrixB: eliminatedMatrixB,
+    } = MatrixOperations.bareissAlgorithm(m1, m2);
 
-      let {
-        matrixA: eliminatedMatrixA,
-        matrixB: eliminatedMatrixB,
-      } = MatrixOperations.bareissAlgorithm(_matrixA, _matrixB, true);
+    const resizedEliminatedMatrixB = MatrixOperations.resizeMatrixAfterPartialElimination(
+      cols1,
+      cols2,
+      new MatrixData(eliminatedMatrixB)
+    ).data;
 
-      const resizedEliminatedMatrixB = MatrixOperations.resizeMatrixAfterPartialElimination(
-        _matrixA.dimensions().columns,
-        _matrixB.dimensions().columns,
-        eliminatedMatrixB,
-      );
+    const multiplication = MatrixOperations.multiply(
+      m1,
+      resizedEliminatedMatrixB
+    );
 
-      const multiplication = MatrixOperations.multiplyMatrix(
-        _matrixA,
+    MatrixOperations.simplify(m2);
+    MatrixOperations.simplify(eliminatedMatrixB);
+    MatrixOperations.simplify(multiplication);
+
+    let systemSolutionsType = MatrixOperations.systemSolutionTypesVerification(
+      m2,
+      eliminatedMatrixA[0].length,
+      eliminatedMatrixB,
+      multiplication
+    );
+
+    let solution: math.MathNode[][] | undefined = undefined;
+    let lettersUsed: Array<string> | undefined = undefined;
+
+    if (systemSolutionsType === SystemSolutionType.SPDOrSPI) {
+      // Método de transformar A(mxo) * X(oxn) = B(mxn)
+      // em A((m*n)x(o*n)) * X((o*n)x1) = B((m*n)x1):
+      const vectorEquation = MatrixOperations.transformEquationToVectorForm(
+        eliminatedMatrixA,
         resizedEliminatedMatrixB,
+        eliminatedMatrixB
       );
 
-      MatrixOperations.printMatrix(_matrixA);
+      MatrixOperations.simplify(vectorEquation.matrixA);
 
-      MatrixOperations.printMatrix(resizedEliminatedMatrixB);
-
-      MatrixOperations.printMatrix(multiplication);
-
-      MatrixOperations.printMatrix(_matrixB);
-
-      let systemSolutionsType = MatrixOperations.systemSolutionTypesVerification(
-        _matrixB,
-        eliminatedMatrixA,
-        eliminatedMatrixB,
-        multiplication,
+      // Sendo matrixX um vetor, achar vetor com variáveis independentes:
+      // Aqui é feita a separação entre SPD e SPI:
+      const generalVectorData = MatrixOperations.findGeneralVectorForSPDOrSPIEquation(
+        vectorEquation
       );
 
-      let solution: MatrixData | undefined;
-      let lettersUsed: Array<string> | undefined;
+      systemSolutionsType = generalVectorData.solutionType;
 
-      if (systemSolutionsType === SystemSolutionType.SPDOrSPI) {
-        // Método de transformar A(mxo) * X(oxn) = B(mxn)
-        // em A((m*n)x(o*n)) * X((o*n)x1) = B((m*n)x1):
-        const vectorEquation = MatrixOperations.transformEquationToVectorForm(
-          eliminatedMatrixA,
-          resizedEliminatedMatrixB,
-          eliminatedMatrixB,
-        );
+      generalVectorData.lettersUsed.length > 0 &&
+        (lettersUsed = generalVectorData.lettersUsed);
 
-        MatrixOperations.printMatrix(vectorEquation.matrixA);
+      const devectorizedMatrixX = MatrixOperations.devectorizeVector(
+        generalVectorData.vectorizedX,
+        resizedEliminatedMatrixB[0].length
+      );
 
-        // Sendo matrixX um vetor, achar vetor com variáveis independentes:
-        // Aqui é feita a separação entre SPD e SPI:
-        const generalVectorData = MatrixOperations.findGeneralVectorForSPDOrSPIEquation(
-          vectorEquation,
-        );
-
-        systemSolutionsType = generalVectorData.solutionType;
-
-        generalVectorData.lettersUsed.length > 0 &&
-          (lettersUsed = generalVectorData.lettersUsed);
-
-        const devectorizedMatrixX = MatrixOperations.devectorizeVector(
-          generalVectorData.vectorizedX,
-          resizedEliminatedMatrixB.dimensions(),
-        );
-
-        solution = devectorizedMatrixX;
-      }
-
-      if (verticalElimination) {
-        solution && (solution = MatrixOperations.transpose(solution));
-
-        eliminatedMatrixA = MatrixOperations.transpose(eliminatedMatrixA);
-      }
-
-      return {
-        eliminatedMatrixA,
-        eliminatedMatrixB,
-        solution,
-        systemSolutionsType,
-        lettersUsed,
-      };
+      solution = MatrixOperations.simplify(devectorizedMatrixX);
     }
 
-    return addErrorTreatment(_findSolutionForMatrixEquation, 'result');
+    if (vertElim) {
+      solution && (solution = MatrixOperations.transpose(solution));
+      eliminatedMatrixA = MatrixOperations.transpose(eliminatedMatrixA);
+    }
+
+    MatrixOperations.simplify(eliminatedMatrixA);
+    MatrixOperations.simplify(eliminatedMatrixB);
+
+    return {
+      eliminatedMatrixA,
+      eliminatedMatrixB,
+      solution,
+      systemSolutionsType,
+      lettersUsed,
+    } as FindSolutionMatrixEquationData;
   }
 
   static transformEquationToVectorForm(
-    matrixA: MatrixData,
-    matrixX: MatrixData,
-    matrixB: MatrixData,
-  ): TransformEquationToVectorFormData {
-    const dimensionsA = matrixA.dimensions();
-    const dimensionsX = matrixX.dimensions();
+    mA: math.MathNode[][],
+    mX: math.MathNode[][],
+    mB: math.MathNode[][]
+  ) {
+    const [rowsA, colsA] = [mA.length, mA[0].length];
+    const colsX = mX[0].length;
 
-    const newMatrixAData = MatrixOperations.emptyMatrix({
-      rows: dimensionsA.rows * dimensionsX.columns,
-      columns: dimensionsA.columns * dimensionsX.columns,
-    });
+    const [rowsNewA, colsNewA] = [rowsA * colsX, colsA * colsX];
 
-    const dimensionsNewA = newMatrixAData.dimensions();
+    const newMatrixAData = MatrixOperations.empty(rowsNewA, colsNewA);
 
-    const vectorizedX = MatrixOperations.vectorizeMatrix(matrixX);
-    const vectorizedB = MatrixOperations.vectorizeMatrix(matrixB);
+    const vectorizedX = MatrixOperations.vectorizeMatrix(mX);
+    const vectorizedB = MatrixOperations.vectorizeMatrix(mB);
 
-    for (let newRowA = 0; newRowA < dimensionsNewA.rows; newRowA++) {
-      const rowA = Math.floor(newRowA / dimensionsX.columns);
-      const columnX = newRowA % dimensionsX.columns;
+    let rowA: number;
+    let colX: number;
+    let rowX: number;
+    let columnA: number;
+
+    for (let newRowA = 0; newRowA < rowsNewA; newRowA++) {
+      rowA = Math.floor(newRowA / colsX);
+      colX = newRowA % colsX;
 
       for (
         let vectorXIndex = 0;
         vectorXIndex < vectorizedX.length;
         vectorXIndex++
       ) {
-        if (vectorXIndex % dimensionsX.columns === columnX) {
-          const rowX = Math.floor(vectorXIndex / dimensionsX.columns);
-          const columnA = rowX;
-
-          newMatrixAData.data[newRowA][vectorXIndex] =
-            matrixA.data[rowA][columnA];
+        if (vectorXIndex % colsX === colX) {
+          rowX = Math.floor(vectorXIndex / colsX);
+          columnA = rowX;
+          newMatrixAData[newRowA][vectorXIndex] = mA[rowA][columnA];
         }
       }
     }
@@ -1113,94 +713,65 @@ class MatrixOperations {
     };
   }
 
-  static devectorizeVector(
-    matrix: Array<ExpressionData>,
-    matrixDimensions: MatrixDimensions,
-  ) {
-    const newData = matrix.reduce((dataAccumulator, element) => {
-      console.log(JSON.stringify({dataAccumulator}));
-
-      let lastElement = dataAccumulator.pop();
-
-      if (!lastElement) {
-        return [[element]];
-      }
-      if (lastElement.length < matrixDimensions.columns) {
-        return [...dataAccumulator, [...lastElement, element]];
-      } else {
-        return [...dataAccumulator, lastElement, [element]];
-      }
-    }, [] as Array<MatrixColumnData>);
-
-    return new MatrixData(newData);
+  static devectorizeVector(v: math.MathNode[], cols: number) {
+    let lastElement: math.MathNode[];
+    const m = v.reduce((dataAccumulator, element) => {
+      lastElement = dataAccumulator.pop() as math.MathNode[];
+      return !lastElement
+        ? [[element]]
+        : lastElement.length < cols
+        ? [...dataAccumulator, [...lastElement, element]]
+        : [...dataAccumulator, lastElement, [element]];
+    }, [] as math.MathNode[][]);
+    return m;
   }
 
-  static vectorizeMatrix(matrix: MatrixData) {
-    const vector = matrix.data.reduce(
-      (elementsAccumulator, elementRow) => [
-        ...elementsAccumulator,
-        ...elementRow,
-      ],
-      [] as MatrixColumnData,
+  static vectorizeMatrix(matrix: math.MathNode[][]) {
+    const vector = matrix.reduce(
+      (acc, elementRow) => [...acc, ...elementRow],
+      [] as math.MathNode[]
     );
-
     return vector;
   }
 
   static findGeneralVectorForSPDOrSPIEquation(
-    vectorEquation: TransformEquationToVectorFormData,
+    vectorEquation: TransformEquationToVectorFormData
   ) {
-    const {matrixA, vectorizedX} = vectorEquation;
+    const { matrixA, vectorizedX } = vectorEquation;
 
-    let lettersUsed: Array<string> = [];
-
-    const getLetter = () =>
-      'n' + ScalarOperations.subscript(lettersUsed.length + 1);
-
+    let lettersUsed: string[] = [];
     let solutionType = SystemSolutionType.SPD;
+    let foundIndependentVariable;
+    let variable: string;
 
-    const {rows, columns} = matrixA.dimensions();
+    const getLetter = () => `n_${lettersUsed.length + 1}`;
 
-    const minDimensions = Math.min(rows, columns);
+    const [rows, cols] = [matrixA.length, matrixA[0].length];
+    const minDim = Math.min(rows, cols);
 
     // Definição das variáveis independentes:
     for (let pivotIndex = 0; pivotIndex < vectorizedX.length; pivotIndex++) {
-      const foundIndependentVariable =
-        pivotIndex >= minDimensions ||
-        matrixA.data[pivotIndex][pivotIndex].isZero;
+      foundIndependentVariable =
+        pivotIndex >= minDim || isZero(matrixA[pivotIndex][pivotIndex]);
 
       if (foundIndependentVariable) {
         solutionType = SystemSolutionType.SPI;
-
-        const variable = getLetter();
-
+        variable = getLetter();
         lettersUsed.push(variable);
-
-        vectorizedX[pivotIndex] = createMatrixElement({
-          variables: [new VariableData({variable})],
-        });
+        vectorizedX[pivotIndex] = math.parse(variable);
       }
     }
+
+    const initialIndex = Math.min(vectorizedX.length, rows) - 1;
 
     // Definição das variáveis dependentes:
     // Começa no último elemento antes da variável independente:
-    for (let rowIndex = vectorizedX.length - 1; rowIndex >= 0; rowIndex--) {
-      for (
-        let columnIndex = matrixA.dimensions().columns - 1;
-        columnIndex > rowIndex;
-        columnIndex--
-      ) {
-        vectorizedX[rowIndex] = ExpressionSimplification.varOperation(
+    for (let rowIndex = initialIndex; rowIndex >= 0; rowIndex--)
+      for (let columnIndex = cols - 1; columnIndex > rowIndex; columnIndex--)
+        vectorizedX[rowIndex] = subtract(
           vectorizedX[rowIndex],
-          Operator.Subtract,
-          ExpressionSimplification.varOperation(
-            matrixA.data[rowIndex][columnIndex],
-            Operator.Multiply,
-            vectorizedX[columnIndex],
-          ),
+          multiply(matrixA[rowIndex][columnIndex], vectorizedX[columnIndex])
         );
-      }
-    }
 
     return {
       vectorizedX,
@@ -1210,66 +781,45 @@ class MatrixOperations {
   }
 
   static systemSolutionTypesVerification(
-    matrixB: MatrixData,
-    eliminatedMatrixA: MatrixData,
-    eliminatedMatrixB: MatrixData,
-    multiplication: MatrixData,
+    mB: math.MathNode[][],
+    colsElimA: number,
+    elimMB: math.MathNode[][],
+    mult: math.MathNode[][]
   ) {
-    /* Se, na expressão, houver uma igualdade de um número nulo com
+    const [rowsElimB, colsElimB] = [elimMB.length, elimMB[0].length];
+    const [rowsB, colsB] = [mB.length, mB[0].length];
+
+    /* Se, na expressão, houver uma igualdade de um número nulo com 
         um não nulo fora das dimensoes da matrix final, ela é um SI: */
-    for (
-      let row = eliminatedMatrixA.dimensions().columns;
-      row < eliminatedMatrixB.dimensions().rows;
-      row++
-    ) {
-      for (
-        let column = 0;
-        column < eliminatedMatrixB.dimensions().columns;
-        column++
-      ) {
-        if (!eliminatedMatrixB.data[row][column].isZero) {
-          return SystemSolutionType.SI;
-        }
-      }
-    }
+    for (let row = colsElimA; row < rowsElimB; row++)
+      for (let col = 0; col < colsElimB; col++)
+        if (!isZero(elimMB[row][col])) return SystemSolutionType.SI;
 
     let isSPIorSI = false;
-
-    for (let row = 0; row < matrixB.dimensions().rows; row++) {
-      for (let column = 0; column < matrixB.dimensions().columns; column++) {
-        if (
-          matrixB.data[row][column].commaStringify() !==
-          multiplication.data[row][column].commaStringify()
-        ) {
-          if (
-            !matrixB.data[row][column].hasVariables &&
-            !multiplication.data[row][column].hasVariables
-          ) {
+    for (let row = 0; row < rowsB; row++) {
+      for (let col = 0; col < colsB; col++) {
+        if (!mB[row][col].equals(mult[row][col])) {
+          if (!hasVariables(mB[row][col]) && !hasVariables(mult[row][col]))
             return SystemSolutionType.SI;
-          }
 
           isSPIorSI = true;
         }
       }
     }
 
-    if (isSPIorSI) {
-      return SystemSolutionType.SPIOrSI;
-    }
-
-    return SystemSolutionType.SPDOrSPI;
+    return isSPIorSI ? SystemSolutionType.SPIOrSI : SystemSolutionType.SPDOrSPI;
   }
 
   static resizeMatrixAfterPartialElimination(
-    matrixAColumns: number,
-    matrixBColumns: number,
-    matrixX: MatrixData,
+    mACols: number,
+    mBCols: number,
+    mX: MatrixData
   ) {
     return MatrixOperations.resizeMatrix({
-      originalMatrix: MatrixOperations.emptyMatrix(matrixX.dimensions()),
-      editableMatrix: matrixX,
-      rows: matrixAColumns,
-      columns: matrixBColumns,
+      originalMatrix: MatrixOperations.emptyMatrix(mX.dimensions()),
+      editableMatrix: mX,
+      rows: mACols,
+      columns: mBCols,
     });
   }
 }

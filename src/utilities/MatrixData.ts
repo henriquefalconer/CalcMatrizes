@@ -1,24 +1,25 @@
-import MatrixColumnData from '../interfaces/MatrixColumnData';
-import MatrixDimensions from '../interfaces/MatrixDimensions';
-import SelectedMatrixElement from '../interfaces/SelectedMatrixElement';
-import {ExpressionData} from './ExpressionClasses';
-import MatrixOperations from './MatrixOperations';
+import MatrixDimensions from "../interfaces/MatrixDimensions";
+import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";
+
+import * as math from "mathjs";
 
 class MatrixData {
-  data: Array<MatrixColumnData>;
+  data: math.MathNode[][];
 
-  constructor(data: Array<Array<ExpressionData | number>>) {
-    this.data = MatrixOperations.applyFrescuresToMatrixData(data);
+  constructor(data: (math.MathNode | number)[][]) {
+    this.data = data.map((row) =>
+      row.map((e) => (e instanceof Object ? e : math.parse(`${e}`)))
+    );
   }
 
   dimensions(): MatrixDimensions {
     return {
       rows: this.data.length,
-      columns: this.data[0] && this.data[0].length,
+      columns: this.data[0].length,
     };
   }
 
-  hasPosition({row, column}: SelectedMatrixElement) {
+  hasPosition({ row, column }: SelectedMatrixElement) {
     return row < this.dimensions().rows && column < this.dimensions().columns;
   }
 }
