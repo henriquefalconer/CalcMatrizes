@@ -1,6 +1,6 @@
-import {CalcState, SystemSolutionType} from '../utilities/constants';
-import {ExpressionData} from '../utilities/ExpressionClasses';
-import MatrixData from '../utilities/MatrixData';
+import { CalcState, SystemSolutionType } from '../utils/constants';
+import MatrixData from '../utils/MatrixData';
+import * as math from 'mathjs';
 
 interface FullEquationData {
   equationType: CalcState;
@@ -10,8 +10,8 @@ interface FullEquationData {
   matrixC?: MatrixData;
   matrixD?: MatrixData;
   matrixE?: MatrixData;
-  scalar?: ElementData | ExpressionData;
-  lettersUsed?: Array<string>;
+  scalar?: math.MathNode;
+  lettersUsed?: string[];
 }
 
 export default FullEquationData;

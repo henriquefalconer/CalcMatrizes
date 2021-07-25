@@ -1,8 +1,8 @@
 import React from 'react';
 import CalculatorScreen from './CalculatorScreen';
 
-import {OrientionProvider} from './hooks/useOrientation';
-import {CalculatorProvider} from './hooks/useCalculator';
+import { OrientionProvider } from './hooks/useOrientation';
+import { CalculatorProvider } from './hooks/useCalculator';
 
 // Descomente para testar o modo de produção (gera um erro, mas funciona):
 // __DEV__ = false;

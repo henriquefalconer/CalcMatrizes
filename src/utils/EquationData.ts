@@ -1,6 +1,9 @@
+import { CalcState } from './constants';
 import FullEquationData from '../interfaces/FullEquationData';
-import {CalcState, SystemSolutionType} from './constants';
 import MatrixData from './MatrixData';
+
+import * as math from 'mathjs';
+import { stringify } from './math';
 
 interface EquationDataParams {
   fullEquation: FullEquationData;
@@ -17,7 +20,7 @@ class EquationData {
   scalar: string | undefined;
   singleMatrixOperator: string | undefined;
 
-  constructor({fullEquation, viewReduced = false}: EquationDataParams) {
+  constructor({ fullEquation, viewReduced = false }: EquationDataParams) {
     switch (fullEquation.equationType) {
       case CalcState.AxXeB:
         this.firstOperator = '×';
@@ -160,7 +163,7 @@ class EquationData {
 
         break;
       case CalcState.LambdaxA:
-        this.scalar = fullEquation.scalar?.commaStringify();
+        this.scalar = stringify(fullEquation.scalar as math.MathNode);
 
         this.firstOperator = '×';
 

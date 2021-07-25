@@ -1,15 +1,15 @@
-import React, {useMemo} from 'react';
-import {Image, TouchableOpacity} from 'react-native';
-import {ButtonType, CalcState, Operator} from '../utilities/constants';
+import React, { useMemo } from 'react';
+import { Image, TouchableOpacity } from 'react-native';
+import { ButtonType, CalcState, Operator } from '../utils/constants';
 import ButtonData from '../interfaces/ButtonData';
 
-import {useCalculator} from '../hooks/useCalculator';
+import { useCalculator } from '../hooks/useCalculator';
 
 interface CalculatorButtonProps {
   buttonType: ButtonType;
 }
 
-const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
+const CalculatorButton = ({ buttonType }: CalculatorButtonProps) => {
   const useCalculatorData = useCalculator();
 
   const buttonData = useMemo(() => {
@@ -22,9 +22,7 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
       changeColumnDirectionActive,
       changeSecondSetOfKeysActive,
       isMatrixSquare,
-      isMatrixFull,
       isInverseEnabled,
-      isCheckActive,
       changeIsVariableKeyboardActive,
       secondSetOfKeysActive,
       columnDirectionActive,
@@ -218,7 +216,7 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
             source: require('../assets/buttons/R.png'),
             sourceActive: require('../assets/buttons/RSelected.png'),
             active: isRActive,
-            disabled: !isMatrixFull || isNumberKeyboardActive,
+            disabled: isNumberKeyboardActive,
             onPress: onPressR,
           };
         case ButtonType.AxXeB:
@@ -226,7 +224,6 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
             source: require('../assets/buttons/AxXeB.png'),
             sourceActive: require('../assets/buttons/AxXeBActive.png'),
             active: calcState === CalcState.AxXeB,
-            disabled: !isMatrixFull,
             onPress: () => onPressResolveEquation(CalcState.AxXeB),
           };
         case ButtonType.BxXeA:
@@ -234,7 +231,6 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
             source: require('../assets/buttons/BxXeA.png'),
             sourceActive: require('../assets/buttons/BxXeAActive.png'),
             active: calcState === CalcState.BxXeA,
-            disabled: !isMatrixFull,
             onPress: () => onPressResolveEquation(CalcState.BxXeA),
           };
         case ButtonType.XxAeB:
@@ -242,7 +238,6 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
             source: require('../assets/buttons/XxAeB.png'),
             sourceActive: require('../assets/buttons/XxAeBActive.png'),
             active: calcState === CalcState.XxAeB,
-            disabled: !isMatrixFull,
             onPress: () => onPressResolveEquation(CalcState.XxAeB),
           };
         case ButtonType.XxBeA:
@@ -250,7 +245,6 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
             source: require('../assets/buttons/XxBeA.png'),
             sourceActive: require('../assets/buttons/XxBeAActive.png'),
             active: calcState === CalcState.XxBeA,
-            disabled: !isMatrixFull,
             onPress: () => onPressResolveEquation(CalcState.XxBeA),
           };
         case ButtonType.GaussianElimination:
@@ -263,7 +257,6 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
             source: require('../assets/buttons/LambdaxA.png'),
             sourceActive: require('../assets/buttons/LambdaxASelected.png'),
             active: calcState === CalcState.LambdaxA,
-            disabled: !isMatrixFull,
             onPress: onPressLambdaxA,
           };
         case ButtonType.AxB:
@@ -271,7 +264,6 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
             source: require('../assets/buttons/AxB.png'),
             sourceActive: require('../assets/buttons/AxBSelected.png'),
             active: calcState === CalcState.AxB,
-            disabled: !isMatrixFull,
             onPress: onPressAxB,
           };
         case ButtonType.BxA:
@@ -279,7 +271,6 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
             source: require('../assets/buttons/BxA.png'),
             sourceActive: require('../assets/buttons/BxASelected.png'),
             active: calcState === CalcState.BxA,
-            disabled: !isMatrixFull,
             onPress: onPressBxA,
           };
         case ButtonType.Inverse:
@@ -305,7 +296,6 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
             source: require('../assets/buttons/SubtractMatrix.png'),
             sourceActive: require('../assets/buttons/SubtractMatrixSelected.png'),
             active: calcState === CalcState.subtractMatrix,
-            disabled: !isMatrixFull,
             onPress: onPressSubtractMatrix,
           };
         case ButtonType.AddMatrix:
@@ -313,7 +303,6 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
             source: require('../assets/buttons/AddMatrix.png'),
             sourceActive: require('../assets/buttons/AddMatrixSelected.png'),
             active: calcState === CalcState.addMatrix,
-            disabled: !isMatrixFull,
             onPress: onPressAddMatrix,
           };
         case ButtonType.Subtract:
@@ -365,7 +354,7 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
           return {
             source: require('../assets/buttons/Check.png'),
             onPress: onCheck,
-            disabled: !isCheckActive || calcState === CalcState.ready,
+            disabled: calcState === CalcState.ready,
           };
         default:
           return {
@@ -395,7 +384,8 @@ const CalculatorButton = ({buttonType}: CalculatorButtonProps) => {
       }}
       disabled={buttonData.disabled || false}
       onPress={buttonData.onPress}
-      onLongPress={buttonData.onLongPress}>
+      onLongPress={buttonData.onLongPress}
+    >
       <Image
         style={{
           flex: 1,

@@ -1,5 +1,5 @@
-import React, {ReactNode} from 'react';
-import {View} from 'react-native';
+import React, { ReactNode } from 'react';
+import { View } from 'react-native';
 
 interface MatrixContainerProps {
   matrixContent: ReactNode;
@@ -11,7 +11,8 @@ const HorizontalLines: React.FC = () => (
     style={{
       flexDirection: 'row',
       justifyContent: 'space-between',
-    }}>
+    }}
+  >
     <View
       style={{
         width: 15,
@@ -29,13 +30,14 @@ const HorizontalLines: React.FC = () => (
   </View>
 );
 
-const MatrixContainer = ({matrixContent, maxWidth}: MatrixContainerProps) => {
+const MatrixContainer = ({ matrixContent, maxWidth }: MatrixContainerProps) => {
   return (
     <View
       style={{
         justifyContent: 'center',
         maxWidth: maxWidth,
-      }}>
+      }}
+    >
       <HorizontalLines />
       <View
         style={{
@@ -46,7 +48,8 @@ const MatrixContainer = ({matrixContent, maxWidth}: MatrixContainerProps) => {
           borderLeftWidth: 3,
           borderRightWidth: 3,
           paddingHorizontal: 4,
-        }}>
+        }}
+      >
         {matrixContent}
       </View>
       <HorizontalLines />

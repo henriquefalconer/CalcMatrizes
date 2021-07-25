@@ -1,9 +1,9 @@
-import React, {useMemo} from 'react';
-import {View, Text, TouchableOpacity, Image} from 'react-native';
-import {useCalculator} from '../hooks/useCalculator';
-import {useOrientation} from '../hooks/useOrientation';
+import React, { useMemo } from 'react';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { useCalculator } from '../hooks/useCalculator';
+import { useOrientation } from '../hooks/useOrientation';
 import MatrixDimensions from '../interfaces/MatrixDimensions';
-import {CalcState} from '../utilities/constants';
+import { CalcState } from '../utils/constants';
 import ArrowButton from './ArrowButton';
 
 interface ArrowButtonsAreaProps {
@@ -47,7 +47,7 @@ const ArrowButtonsArea = ({
     redoHistory,
   } = useCalculator();
 
-  const {isPortrait} = useOrientation();
+  const { isPortrait } = useOrientation();
 
   const historyDisabled = useMemo(
     () =>
@@ -56,7 +56,7 @@ const ArrowButtonsArea = ({
         : matrixHistory.currentPosition === 0) ||
       !!fullScreenDeterminant ||
       calcState !== CalcState.ready,
-    [forwardHistory, matrixHistory, calcState, fullScreenDeterminant],
+    [forwardHistory, matrixHistory, calcState, fullScreenDeterminant]
   );
 
   return (
@@ -73,19 +73,22 @@ const ArrowButtonsArea = ({
               flexDirection: 'row',
               height: crossWidth,
             }),
-      }}>
+      }}
+    >
       {!vertical && (
         <TouchableOpacity
           onPress={onPressBottomLeftText}
           style={{
             position: 'absolute',
             left: 0,
-          }}>
+          }}
+        >
           <Text
             style={{
               color: '#fff',
               fontSize: 25,
-            }}>
+            }}
+          >
             {bottomLeftText}
           </Text>
         </TouchableOpacity>
@@ -98,7 +101,8 @@ const ArrowButtonsArea = ({
             top: 0,
             opacity: historyDisabled ? 0.5 : 1,
           }}
-          disabled={historyDisabled}>
+          disabled={historyDisabled}
+        >
           <Image
             style={{
               width: 18.5 * 1.3,
@@ -114,9 +118,10 @@ const ArrowButtonsArea = ({
       )}
       <View
         style={{
-          ...(!vertical && {flexDirection: 'row'}),
+          ...(!vertical && { flexDirection: 'row' }),
           opacity: hidden ? 0.0 : 1.0,
-        }}>
+        }}
+      >
         <ArrowButton
           vertical={vertical}
           source={
@@ -174,12 +179,14 @@ const ArrowButtonsArea = ({
           style={{
             position: 'absolute',
             right: 0,
-          }}>
+          }}
+        >
           <Text
             style={{
               color: '#fff',
               fontSize: 25,
-            }}>
+            }}
+          >
             {bottomRightText}
           </Text>
         </TouchableOpacity>
@@ -191,12 +198,14 @@ const ArrowButtonsArea = ({
             position: 'absolute',
             flex: 1,
             justifyContent: 'center',
-          }}>
+          }}
+        >
           <Text
             style={{
               color: '#fff',
               fontSize: 25,
-            }}>
+            }}
+          >
             {bottomMiddleText}
           </Text>
         </TouchableOpacity>

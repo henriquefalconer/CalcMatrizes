@@ -1,25 +1,19 @@
-import React, {useCallback, useMemo, useState} from 'react';
-import {View, Text, ScrollView} from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { View, Text, ScrollView } from 'react-native';
 import Matrix from './Matrix';
-import {
-  CalcState,
-  findFraction,
-  toFixedOnZeroes,
-  SystemSolutionType,
-  unicodeDiagonalFraction,
-} from '../utilities/constants';
+import { CalcState, SystemSolutionType } from '../utils/constants';
 import ArrowButtonsArea from './ArrowButtonsArea';
 import FullEquation from './FullEquation';
-import ScalarOperations from '../utilities/ScalarOperations';
 
-import {useCalculator} from '../hooks/useCalculator';
-import {useOrientation} from '../hooks/useOrientation';
-import {ExpressionData} from '../utilities/ExpressionClasses';
+import { useCalculator } from '../hooks/useCalculator';
+import { useOrientation } from '../hooks/useOrientation';
+import * as math from 'mathjs';
+import { stringify } from '../utils/math';
 
 const BUTTON_AREAS_CROSS_WIDTH = 70;
 
 const MatrixArea: React.FC = () => {
-  const {isPortrait, setLandscape, setPortrait} = useOrientation();
+  const { isPortrait, setLandscape, setPortrait } = useOrientation();
 
   const {
     calcState,
@@ -44,43 +38,22 @@ const MatrixArea: React.FC = () => {
 
   const [matrixAreaWidth, changeMatrixAreaWidth] = useState(0);
 
-  const formatNumberToFraction = useCallback(
-    number => {
-      return number !== null
-        ? unicodeDiagonalFraction(...findFraction(toFixedOnZeroes(number)))
-        : null;
-    },
-    [unicodeDiagonalFraction, findFraction, toFixedOnZeroes],
-  );
-
   const formatDeterminant = useCallback(
     (
-      determinant: ExpressionData | null,
+      determinant: math.MathNode | null,
       overflow: boolean = true,
-      det: boolean = true,
+      det: boolean = true
     ) => {
-      if (determinant === null) {
-        return null;
-      }
+      if (!determinant) return null;
 
-      let stringDeterminant = determinant?.commaStringify();
+      let stringDeterminant = stringify(determinant);
 
-      if (stringDeterminant.length > 8 && overflow) {
+      if (stringDeterminant.length > 8 && overflow)
         stringDeterminant = stringDeterminant.substring(0, 8 - 3) + '...';
-      }
-      if (stringDeterminant && !ScalarOperations.isNumber(stringDeterminant)) {
-        return det ? `det: ${stringDeterminant}` : stringDeterminant;
-      }
 
-      const formatted = formatNumberToFraction(stringDeterminant);
-
-      return formatted !== null
-        ? det
-          ? `det: ${formatted}`
-          : formatted
-        : null;
+      return det ? `det: ${stringDeterminant}` : stringDeterminant;
     },
-    [formatNumberToFraction],
+    []
   );
 
   const scalarText = useMemo(() => {
@@ -90,7 +63,7 @@ const MatrixArea: React.FC = () => {
     if (scalar === null) {
       return null;
     }
-    return scalar.commaStringify(true);
+    return stringify(scalar);
   }, [editableOperatorNumber, editableScalar]);
 
   const equationTypeString = useMemo(() => {
@@ -124,7 +97,7 @@ const MatrixArea: React.FC = () => {
       editableDimensions,
       isPortrait,
       fullScreenDeterminant,
-    ],
+    ]
   );
 
   return (
@@ -133,15 +106,17 @@ const MatrixArea: React.FC = () => {
         flex: 1,
         marginTop: 20,
       }}
-      onLayout={event => {
+      onLayout={(event) => {
         changeMatrixAreaWidth(event.nativeEvent.layout.width);
-      }}>
+      }}
+    >
       <View
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
           flex: 1,
-        }}>
+        }}
+      >
         {(!fullEquation || isPortrait) && (
           <ArrowButtonsArea
             vertical
@@ -165,13 +140,15 @@ const MatrixArea: React.FC = () => {
                 flexGrow: 1,
                 justifyContent: 'center',
               }}
-              showsVerticalScrollIndicator={false}>
+              showsVerticalScrollIndicator={false}
+            >
               <Text
                 style={{
                   color: '#fff',
                   fontSize: 60,
                   textAlign: 'center',
-                }}>
+                }}
+              >
                 {formatDeterminant(matrixOnScreenDeterminant, false, false)}
               </Text>
             </ScrollView>
@@ -190,13 +167,15 @@ const MatrixArea: React.FC = () => {
               justifyContent: 'center',
               alignItems: 'center',
               flex: 1,
-            }}>
+            }}
+          >
             <Text
               style={{
                 color: '#fff',
                 fontSize: 60,
                 textAlign: 'right',
-              }}>
+              }}
+            >
               {scalarText}
             </Text>
           </View>
@@ -245,7 +224,9 @@ const MatrixArea: React.FC = () => {
         changeEditableDimensions={changeEditableDimensions}
         bottomLeftText={bottomLeftText}
         bottomRightText={
-          fullEquation !== null && !isPortrait
+          fullEquation?.solutionType === SystemSolutionType.SPD
+            ? null
+            : fullEquation !== null && !isPortrait
             ? [
                 CalcState.AxXeB,
                 CalcState.BxXeA,

@@ -13,6 +13,7 @@
     "testflight": "yarn build:ios && cd ios && fastlane beta && cd .."
   },
   "dependencies": {
+    "mathjs": "https://github.com/henriquefalconer/mathjs.git#fix/rationalize",
     "react": "17.0.1",
     "react-native": "0.64.0",
     "react-native-change-orientation": "^0.1.0"
