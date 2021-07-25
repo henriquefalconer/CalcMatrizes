@@ -1,5 +1,5 @@
-import React from 'react';
-import {Image, ImageSourcePropType, TouchableOpacity} from 'react-native';
+import React from "react";
+import { Image, ImageSourcePropType, TouchableOpacity } from "react-native";
 
 interface ArrowButtonProps {
   vertical: boolean;
@@ -20,7 +20,8 @@ const ArrowButton = ({
       disabled={disabled}
       style={{
         opacity: disabled ? 0.5 : 1,
-      }}>
+      }}
+    >
       <Image
         style={
           vertical

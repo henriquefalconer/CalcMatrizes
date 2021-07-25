@@ -1,9 +1,9 @@
-import React, {useMemo, useState} from 'react';
-import {View, Text, ScrollView, FlatList} from 'react-native';
-import Matrix from './Matrix';
-import EquationData from '../utilities/EquationData';
-import {CalcState} from '../utilities/constants';
-import FullEquationData from '../interfaces/FullEquationData';
+import React, { useMemo, useState } from "react";
+import { View, Text, ScrollView, FlatList } from "react-native";
+import Matrix from "./Matrix";
+import EquationData from "../utilities/EquationData";
+import { CalcState } from "../utilities/constants";
+import FullEquationData from "../interfaces/FullEquationData";
 
 const OPERATORS_WIDTH = 50;
 const X_OPERATOR_WIDTH = 50;
@@ -22,43 +22,47 @@ interface XOperatorProps {
   variableDimensions: string;
 }
 
-const Scalar = ({scalar}: ScalarProps) => {
+const Scalar = ({ scalar }: ScalarProps) => {
   return (
     <Text
       style={{
-        color: '#fff',
-        textAlign: 'center',
+        color: "#fff",
+        textAlign: "center",
         fontSize: 30,
         top: 2,
-      }}>
+      }}
+    >
       {scalar}
     </Text>
   );
 };
 
-const XOperator = ({variableDimensions}: XOperatorProps) => {
+const XOperator = ({ variableDimensions }: XOperatorProps) => {
   return (
     <Text
       style={{
-        color: '#fff',
-        textAlign: 'center',
+        color: "#fff",
+        textAlign: "center",
         fontSize: 30,
         top: 2,
         width: X_OPERATOR_WIDTH,
-      }}>
+      }}
+    >
       <Text
         style={{
-          color: '#fff',
+          color: "#fff",
           fontSize: 30,
-        }}>
+        }}
+      >
         X
       </Text>
       <Text
         style={{
-          color: '#fff',
+          color: "#fff",
           fontSize: 14,
           top: 50,
-        }}>
+        }}
+      >
         {variableDimensions}
       </Text>
     </Text>
@@ -78,7 +82,7 @@ const FullEquation = ({
         fullEquation,
         viewReduced,
       }),
-    [fullEquation, viewReduced],
+    [fullEquation, viewReduced]
   );
 
   const singleMatrixMaxWidth = useMemo(
@@ -87,15 +91,15 @@ const FullEquation = ({
         equationData.getQuantityOfOperators() * OPERATORS_WIDTH -
         (equationData.hasXOperator() ? X_OPERATOR_WIDTH : 0)) /
       equationData.getQuantityOfMatrices(),
-    [totalMaxAreaWidth, equationData],
+    [totalMaxAreaWidth, equationData]
   );
 
   return (
     <ScrollView
       contentContainerStyle={{
         flexGrow: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: "center",
+        justifyContent: "center",
       }}
       style={{
         paddingBottom: 3,
@@ -103,11 +107,12 @@ const FullEquation = ({
       }}
       horizontal
       showsHorizontalScrollIndicator={false}
-      overScrollMode="never">
+      overScrollMode="never"
+    >
       {equationData.matrix1 ? (
         <Matrix
           matrixData={equationData.matrix1}
-          onLayout={event => {
+          onLayout={(event) => {
             changeMatrix1Height(event.nativeEvent.layout.height);
           }}
         />
@@ -123,27 +128,29 @@ const FullEquation = ({
       {equationData.singleMatrixOperator && (
         <Text
           style={{
-            color: '#fff',
-            textAlign: 'center',
+            color: "#fff",
+            textAlign: "center",
             fontSize: 30,
-            justifyContent: 'flex-start',
+            justifyContent: "flex-start",
             width: OPERATORS_WIDTH,
             top: -matrix1Height / 2,
-          }}>
+          }}
+        >
           {equationData.singleMatrixOperator}
         </Text>
       )}
       {equationData.firstOperator && (
         <Text
           style={{
-            color: '#fff',
-            textAlign: 'center',
+            color: "#fff",
+            textAlign: "center",
             fontSize: 35,
             width:
               fullEquation.equationType === CalcState.gaussianElimination
                 ? 60
                 : OPERATORS_WIDTH,
-          }}>
+          }}
+        >
           {equationData.firstOperator}
         </Text>
       )}
@@ -159,11 +166,12 @@ const FullEquation = ({
       {equationData.secondOperator && (
         <Text
           style={{
-            color: '#fff',
-            textAlign: 'center',
+            color: "#fff",
+            textAlign: "center",
             fontSize: 35,
             width: OPERATORS_WIDTH,
-          }}>
+          }}
+        >
           {equationData.secondOperator}
         </Text>
       )}

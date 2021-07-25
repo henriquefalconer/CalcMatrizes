@@ -1,17 +1,17 @@
-import React, {useState} from 'react';
-import {View, FlatList, LayoutChangeEvent} from 'react-native';
-import MatrixContainer from './MatrixContainer';
-import MatrixColumn from './MatrixColumn';
-import MatrixOperations from '../utilities/MatrixOperations';
-import SelectedMatrixElement from '../interfaces/SelectedMatrixElement';
-import {ElementData} from '../utilities/ExpressionClasses';
-import MatrixData from '../utilities/MatrixData';
+import React, { useState } from "react";
+import { View, FlatList, LayoutChangeEvent } from "react-native";
+import MatrixContainer from "./MatrixContainer";
+import MatrixColumn from "./MatrixColumn";
+import MatrixOperations from "../utilities/MatrixOperations";
+import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";
+import MatrixData from "../utilities/MatrixData";
+import * as math from "mathjs";
 
 interface MatrixProps {
   matrixData: MatrixData;
   selectedMatrixElement?: SelectedMatrixElement | null;
   maxMatrixWidth: number;
-  editableOperatorNumber?: ElementData | null;
+  editableOperatorNumber?: math.MathNode | null;
   onLayout?(e: LayoutChangeEvent): void;
   changeSelectedMatrixElement?(position: SelectedMatrixElement): void;
 }
@@ -34,19 +34,19 @@ const Matrix = ({
       maxWidth={maxMatrixWidth}
       matrixContent={
         <View
-          onLayout={event => {
+          onLayout={(event) => {
             changeFlatListDimensions({
               ...flatListDimensions,
               width: event.nativeEvent.layout.width,
             });
-
             onLayout && onLayout(event);
-          }}>
+          }}
+        >
           <FlatList
             horizontal
             directionalLockEnabled={false}
             style={{
-              transform: [{rotateY: '180deg'}],
+              transform: [{ rotateY: "180deg" }],
             }}
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
@@ -60,8 +60,8 @@ const Matrix = ({
               left: 1,
             }}
             data={MatrixOperations.insertElementsPosition(matrixData)}
-            keyExtractor={element => element.column.toString()}
-            renderItem={({item}) => {
+            keyExtractor={(element) => element.column.toString()}
+            renderItem={({ item }) => {
               return (
                 <MatrixColumn
                   wholeMatrix={matrixData}

@@ -1,10 +1,10 @@
-import React from 'react';
-import {useState} from 'react';
-import {View, StyleSheet} from 'react-native';
-import CalculatorButton from './CalculatorButton';
-import {ButtonType} from '../utilities/constants';
+import React from "react";
+import { useState } from "react";
+import { View, StyleSheet } from "react-native";
+import CalculatorButton from "./CalculatorButton";
+import { ButtonType } from "../utilities/constants";
 
-import {useCalculator} from '../hooks/useCalculator';
+import { useCalculator } from "../hooks/useCalculator";
 
 const ButtonsArea: React.FC = () => {
   const {
@@ -22,7 +22,7 @@ const ButtonsArea: React.FC = () => {
   const styles = StyleSheet.create({
     button: {
       height: (buttonsAreaWidth / 4) * 0.7,
-      flexDirection: 'row',
+      flexDirection: "row",
       marginVertical: 3,
       marginHorizontal: 6,
     },
@@ -30,12 +30,13 @@ const ButtonsArea: React.FC = () => {
 
   return (
     <View
-      onLayout={event => {
+      onLayout={(event) => {
         changeButtonsAreaWidth(event.nativeEvent.layout.width);
       }}
       style={{
         marginBottom: 10,
-      }}>
+      }}
+    >
       <View style={styles.button}>
         <CalculatorButton
           buttonType={shouldACAppear ? ButtonType.AC : ButtonType.CE}
