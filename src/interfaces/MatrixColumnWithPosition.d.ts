@@ -1,5 +1,4 @@
-import ElementDataWithPosition from './ElementDataWithPosition';
-import MatrixColumnData from './MatrixColumnData';
+import ElementDataWithPosition from "./ElementDataWithPosition";
 
 interface MatrixColumnWithPosition {
   data: Array<ElementDataWithPosition>;
