@@ -1,7 +1,7 @@
-import MatrixDimensions from "../interfaces/MatrixDimensions";
-import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";
+import MatrixDimensions from '../interfaces/MatrixDimensions';
+import SelectedMatrixElement from '../interfaces/SelectedMatrixElement';
 
-import * as math from "mathjs";
+import * as math from 'mathjs';
 
 class MatrixData {
   data: math.MathNode[][];

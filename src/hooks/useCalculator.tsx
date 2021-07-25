@@ -5,19 +5,19 @@ import React, {
   useMemo,
   useState,
   useEffect,
-} from "react";
+} from 'react';
 
-import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";
-import MatrixDimensions from "../interfaces/MatrixDimensions";
-import FullEquationData from "../interfaces/FullEquationData";
+import SelectedMatrixElement from '../interfaces/SelectedMatrixElement';
+import MatrixDimensions from '../interfaces/MatrixDimensions';
+import FullEquationData from '../interfaces/FullEquationData';
 
-import MatrixOperations from "../utils/MatrixOperations";
-import MatrixData from "../utils/MatrixData";
+import MatrixOperations from '../utils/MatrixOperations';
+import MatrixData from '../utils/MatrixData';
 
-import { subscript, stringifySymbol } from "../utils/string";
-import { CalcState, SystemSolutionType, Operator } from "../utils/constants";
+import { subscript, stringifySymbol } from '../utils/string';
+import { CalcState, SystemSolutionType, Operator } from '../utils/constants';
 
-import * as math from "mathjs";
+import * as math from 'mathjs';
 import {
   genericOperation,
   invert,
@@ -29,7 +29,7 @@ import {
   hasVariables,
   parseComma,
   zero,
-} from "../utils/math";
+} from '../utils/math';
 
 interface MatrixHistory {
   history: Array<MatrixData>;
@@ -274,13 +274,13 @@ export const CalculatorProvider: React.FC = ({ children }) => {
       fullEquation?.solutionType
         ? fullEquation?.solutionType +
           (!fullEquation.lettersUsed || !withVariables
-            ? ""
+            ? ''
             : ` (${
                 fullEquation.lettersUsed.length > 3
-                  ? "n" + subscript("i")
-                  : fullEquation.lettersUsed.map(stringifySymbol).join(", ")
+                  ? 'n' + subscript('i')
+                  : fullEquation.lettersUsed.map(stringifySymbol).join(', ')
               } \u2208 R)`)
-        : "",
+        : '',
     [fullEquation]
   );
 
@@ -307,7 +307,7 @@ export const CalculatorProvider: React.FC = ({ children }) => {
     () =>
       editableDimensions
         ? `${editableDimensions.rows}x${editableDimensions.columns}`
-        : "",
+        : '',
     [editableDimensions]
   );
 
@@ -395,11 +395,11 @@ export const CalculatorProvider: React.FC = ({ children }) => {
     ): math.MathNode | string | null => {
       if (operationHappening && !forceNotOperatorNumber)
         return editableOperatorNumber === null && !doNotStringify
-          ? ""
+          ? ''
           : editableOperatorNumber;
 
       if (calcState !== CalcState.LambdaxA && !selectedMatrixElement)
-        return !doNotStringify ? "" : null;
+        return !doNotStringify ? '' : null;
 
       const { row, column } =
         selectedMatrixElement || ({} as SelectedMatrixElement);
@@ -413,7 +413,7 @@ export const CalculatorProvider: React.FC = ({ children }) => {
         (shouldUserInputOverwriteElement || isZero(matrixNumber)) &&
         !forceNotOperatorNumber
       )
-        return doNotStringify ? null : "";
+        return doNotStringify ? null : '';
 
       return matrixNumber;
     },
@@ -502,7 +502,7 @@ export const CalculatorProvider: React.FC = ({ children }) => {
 
       if (!hasVariables(element)) {
         const newNums = math.parse(
-          element === "." ? "#" + (nums || "0") + element : nums + element
+          element === '.' ? '#' + (nums || '0') + element : nums + element
         );
         changeNumberWritten({
           newNumber: vars ? multiply(newNums, vars) : newNums,

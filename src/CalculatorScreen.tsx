@@ -1,8 +1,8 @@
-import React from "react";
-import { SafeAreaView, StatusBar } from "react-native";
-import ButtonsArea from "./components/ButtonsArea";
-import InfoArea from "./components/InfoArea";
-import { useOrientation } from "./hooks/useOrientation";
+import React from 'react';
+import { SafeAreaView, StatusBar } from 'react-native';
+import ButtonsArea from './components/ButtonsArea';
+import InfoArea from './components/InfoArea';
+import { useOrientation } from './hooks/useOrientation';
 
 const CalculatorScreen: React.FC = () => {
   const { isPortrait } = useOrientation();
@@ -11,8 +11,8 @@ const CalculatorScreen: React.FC = () => {
     <SafeAreaView
       style={{
         flex: 1,
-        backgroundColor: "#000",
-        justifyContent: "flex-end",
+        backgroundColor: '#000',
+        justifyContent: 'flex-end',
       }}
     >
       <StatusBar barStyle="light-content" />

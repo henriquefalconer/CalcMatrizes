@@ -4,10 +4,10 @@ import React, {
   useContext,
   useEffect,
   useState,
-} from "react";
-import { Dimensions } from "react-native";
+} from 'react';
+import { Dimensions } from 'react-native';
 
-import ChangeOrientation from "react-native-change-orientation";
+import ChangeOrientation from 'react-native-change-orientation';
 
 // Copiado de react-native-change-orientation:
 interface ChangeOrientationType {
@@ -34,7 +34,7 @@ const OrientationContext = createContext<OrientationContextData>(
 
 export const OrientionProvider: React.FC = ({ children }) => {
   const checkIfPortrait = useCallback(() => {
-    const dimensions = Dimensions.get("screen");
+    const dimensions = Dimensions.get('screen');
     return dimensions.height >= dimensions.width;
   }, []);
 
@@ -42,7 +42,7 @@ export const OrientionProvider: React.FC = ({ children }) => {
 
   useEffect(
     () =>
-      Dimensions.addEventListener("change", () =>
+      Dimensions.addEventListener('change', () =>
         setIsPortrait(checkIfPortrait())
       ),
     []

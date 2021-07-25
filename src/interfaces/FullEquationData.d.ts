@@ -1,6 +1,6 @@
-import { CalcState, SystemSolutionType } from "../utils/constants";
-import MatrixData from "../utils/MatrixData";
-import * as math from "mathjs";
+import { CalcState, SystemSolutionType } from '../utils/constants';
+import MatrixData from '../utils/MatrixData';
+import * as math from 'mathjs';
 
 interface FullEquationData {
   equationType: CalcState;

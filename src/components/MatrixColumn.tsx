@@ -1,14 +1,14 @@
-import React, { useCallback } from "react";
-import { View, Text, TouchableOpacity, FlatList } from "react-native";
-import * as math from "mathjs";
+import React, { useCallback } from 'react';
+import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import * as math from 'mathjs';
 
-import { useCalculator } from "../hooks/useCalculator";
+import { useCalculator } from '../hooks/useCalculator';
 
-import MatrixData from "../utils/MatrixData";
-import { stringify } from "../utils/math";
+import MatrixData from '../utils/MatrixData';
+import { stringify } from '../utils/math';
 
-import ElementDataWithPosition from "../interfaces/ElementDataWithPosition";
-import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";
+import ElementDataWithPosition from '../interfaces/ElementDataWithPosition';
+import SelectedMatrixElement from '../interfaces/SelectedMatrixElement';
 
 const ELEMENT_HEIGHT = 40;
 const ELEMENT_VERTICAL_MARGIN = 11;
@@ -53,10 +53,10 @@ const MatrixColumn = ({
     (row, column) => {
       return {
         backgroundColor: isElementSelected({ row, column })
-          ? "#404040"
+          ? '#404040'
           : wholeMatrix.data[row][column] === null
-          ? "#1c1c1c"
-          : "transparent",
+          ? '#1c1c1c'
+          : 'transparent',
         ...(wholeMatrix.data[row][column] === null &&
           {
             //borderColor: '#fff',
@@ -82,7 +82,7 @@ const MatrixColumn = ({
   return (
     <FlatList
       style={{
-        transform: [{ rotateX: "180deg" }],
+        transform: [{ rotateX: '180deg' }],
       }}
       scrollEnabled={false}
       key={JSON.stringify(wholeMatrix.dimensions())}
@@ -102,8 +102,8 @@ const MatrixColumn = ({
         return (
           <TouchableOpacity
             style={{
-              alignSelf: "stretch",
-              transform: [{ rotateY: "180deg" }, { rotateX: "180deg" }],
+              alignSelf: 'stretch',
+              transform: [{ rotateY: '180deg' }, { rotateX: '180deg' }],
             }}
             onPress={() => {
               changeSelectedMatrixElement({
@@ -119,8 +119,8 @@ const MatrixColumn = ({
                 paddingVertical: 5,
                 paddingHorizontal: 10,
                 borderRadius: 10,
-                alignItems: "center",
-                justifyContent: "center",
+                alignItems: 'center',
+                justifyContent: 'center',
                 height: ELEMENT_HEIGHT,
                 minWidth: minWidth,
                 marginHorizontal: 5,
@@ -128,9 +128,9 @@ const MatrixColumn = ({
             >
               <Text
                 style={{
-                  color: "#fff",
+                  color: '#fff',
                   fontSize: 26,
-                  textAlign: "center",
+                  textAlign: 'center',
                 }}
               >
                 {formatElement(item)}

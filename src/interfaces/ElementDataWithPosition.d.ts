@@ -1,4 +1,4 @@
-import * as math from "mathjs";
+import * as math from 'mathjs';
 
 interface ElementDataWithPosition {
   number: math.MathNode;

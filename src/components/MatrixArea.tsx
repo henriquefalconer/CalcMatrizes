@@ -1,14 +1,14 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { View, Text, ScrollView } from "react-native";
-import Matrix from "./Matrix";
-import { CalcState, SystemSolutionType } from "../utils/constants";
-import ArrowButtonsArea from "./ArrowButtonsArea";
-import FullEquation from "./FullEquation";
+import React, { useCallback, useMemo, useState } from 'react';
+import { View, Text, ScrollView } from 'react-native';
+import Matrix from './Matrix';
+import { CalcState, SystemSolutionType } from '../utils/constants';
+import ArrowButtonsArea from './ArrowButtonsArea';
+import FullEquation from './FullEquation';
 
-import { useCalculator } from "../hooks/useCalculator";
-import { useOrientation } from "../hooks/useOrientation";
-import * as math from "mathjs";
-import { stringify } from "../utils/math";
+import { useCalculator } from '../hooks/useCalculator';
+import { useOrientation } from '../hooks/useOrientation';
+import * as math from 'mathjs';
+import { stringify } from '../utils/math';
 
 const BUTTON_AREAS_CROSS_WIDTH = 70;
 
@@ -49,7 +49,7 @@ const MatrixArea: React.FC = () => {
       let stringDeterminant = stringify(determinant);
 
       if (stringDeterminant.length > 8 && overflow)
-        stringDeterminant = stringDeterminant.substring(0, 8 - 3) + "...";
+        stringDeterminant = stringDeterminant.substring(0, 8 - 3) + '...';
 
       return det ? `det: ${stringDeterminant}` : stringDeterminant;
     },
@@ -69,27 +69,27 @@ const MatrixArea: React.FC = () => {
   const equationTypeString = useMemo(() => {
     switch (fullEquation?.equationType) {
       case CalcState.AxXeB:
-        return "A×X=B";
+        return 'A×X=B';
       case CalcState.BxXeA:
-        return "B×X=A";
+        return 'B×X=A';
       case CalcState.XxAeB:
-        return "X×A=B";
+        return 'X×A=B';
       case CalcState.XxBeA:
-        return "X×B=A";
+        return 'X×B=A';
       default:
-        return "";
+        return '';
     }
   }, [fullEquation]);
 
   const bottomLeftText = useMemo(
     () =>
       calcState === CalcState.LambdaxA
-        ? "Scalar"
+        ? 'Scalar'
         : fullEquation !== null && !isPortrait
         ? equationTypeString
         : !fullScreenDeterminant
         ? editableDimensionsString
-        : "",
+        : '',
     [
       equationTypeString,
       calcState,
@@ -112,8 +112,8 @@ const MatrixArea: React.FC = () => {
     >
       <View
         style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
+          flexDirection: 'row',
+          justifyContent: 'space-between',
           flex: 1,
         }}
       >
@@ -138,15 +138,15 @@ const MatrixArea: React.FC = () => {
             <ScrollView
               contentContainerStyle={{
                 flexGrow: 1,
-                justifyContent: "center",
+                justifyContent: 'center',
               }}
               showsVerticalScrollIndicator={false}
             >
               <Text
                 style={{
-                  color: "#fff",
+                  color: '#fff',
                   fontSize: 60,
-                  textAlign: "center",
+                  textAlign: 'center',
                 }}
               >
                 {formatDeterminant(matrixOnScreenDeterminant, false, false)}
@@ -164,16 +164,16 @@ const MatrixArea: React.FC = () => {
         ) : (
           <View
             style={{
-              justifyContent: "center",
-              alignItems: "center",
+              justifyContent: 'center',
+              alignItems: 'center',
               flex: 1,
             }}
           >
             <Text
               style={{
-                color: "#fff",
+                color: '#fff',
                 fontSize: 60,
-                textAlign: "right",
+                textAlign: 'right',
               }}
             >
               {scalarText}
@@ -234,12 +234,12 @@ const MatrixArea: React.FC = () => {
                 CalcState.XxBeA,
               ].includes(fullEquation.equationType)
               ? viewReduced
-                ? "Original"
-                : "Reduzida"
+                ? 'Original'
+                : 'Reduzida'
               : fullEquation.equationType === CalcState.gaussianElimination
               ? viewReduced
-                ? "Não Reduzida"
-                : "Reduzida"
+                ? 'Não Reduzida'
+                : 'Reduzida'
               : null
             : !operationHappening &&
               calcState !== CalcState.LambdaxA &&
@@ -250,11 +250,11 @@ const MatrixArea: React.FC = () => {
           calcState !== CalcState.editing &&
           isPortrait
             ? viewReduced
-              ? "Não Reduzida"
-              : "Reduzida"
+              ? 'Não Reduzida'
+              : 'Reduzida'
             : calcState === CalcState.ready
             ? getSolutionTypeString(!isPortrait)
-            : ""
+            : ''
         }
         onPressBottomMiddleText={() =>
           (isPortrait &&

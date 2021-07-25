@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { View, FlatList, LayoutChangeEvent } from "react-native";
-import MatrixContainer from "./MatrixContainer";
-import MatrixColumn from "./MatrixColumn";
-import MatrixOperations from "../utils/MatrixOperations";
-import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";
-import MatrixData from "../utils/MatrixData";
-import * as math from "mathjs";
+import React, { useState } from 'react';
+import { View, FlatList, LayoutChangeEvent } from 'react-native';
+import MatrixContainer from './MatrixContainer';
+import MatrixColumn from './MatrixColumn';
+import MatrixOperations from '../utils/MatrixOperations';
+import SelectedMatrixElement from '../interfaces/SelectedMatrixElement';
+import MatrixData from '../utils/MatrixData';
+import * as math from 'mathjs';
 
 interface MatrixProps {
   matrixData: MatrixData;
@@ -46,7 +46,7 @@ const Matrix = ({
             horizontal
             directionalLockEnabled={false}
             style={{
-              transform: [{ rotateY: "180deg" }],
+              transform: [{ rotateY: '180deg' }],
             }}
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}

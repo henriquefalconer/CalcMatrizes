@@ -1,10 +1,10 @@
-import React from "react";
-import { useState } from "react";
-import { View, StyleSheet } from "react-native";
-import CalculatorButton from "./CalculatorButton";
-import { ButtonType } from "../utils/constants";
+import React from 'react';
+import { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
+import CalculatorButton from './CalculatorButton';
+import { ButtonType } from '../utils/constants';
 
-import { useCalculator } from "../hooks/useCalculator";
+import { useCalculator } from '../hooks/useCalculator';
 
 const ButtonsArea: React.FC = () => {
   const {
@@ -22,7 +22,7 @@ const ButtonsArea: React.FC = () => {
   const styles = StyleSheet.create({
     button: {
       height: (buttonsAreaWidth / 4) * 0.7,
-      flexDirection: "row",
+      flexDirection: 'row',
       marginVertical: 3,
       marginHorizontal: 6,
     },

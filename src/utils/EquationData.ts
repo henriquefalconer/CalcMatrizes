@@ -1,9 +1,9 @@
-import { CalcState } from "./constants";
-import FullEquationData from "../interfaces/FullEquationData";
-import MatrixData from "./MatrixData";
+import { CalcState } from './constants';
+import FullEquationData from '../interfaces/FullEquationData';
+import MatrixData from './MatrixData';
 
-import * as math from "mathjs";
-import { stringify } from "./math";
+import * as math from 'mathjs';
+import { stringify } from './math';
 
 interface EquationDataParams {
   fullEquation: FullEquationData;
@@ -23,9 +23,9 @@ class EquationData {
   constructor({ fullEquation, viewReduced = false }: EquationDataParams) {
     switch (fullEquation.equationType) {
       case CalcState.AxXeB:
-        this.firstOperator = "×";
+        this.firstOperator = '×';
 
-        this.secondOperator = "=";
+        this.secondOperator = '=';
 
         this.variablePosition = 2;
 
@@ -43,9 +43,9 @@ class EquationData {
 
         break;
       case CalcState.BxXeA:
-        this.firstOperator = "×";
+        this.firstOperator = '×';
 
-        this.secondOperator = "=";
+        this.secondOperator = '=';
 
         this.variablePosition = 2;
 
@@ -63,9 +63,9 @@ class EquationData {
 
         break;
       case CalcState.XxAeB:
-        this.firstOperator = "×";
+        this.firstOperator = '×';
 
-        this.secondOperator = "=";
+        this.secondOperator = '=';
 
         this.variablePosition = 1;
 
@@ -83,9 +83,9 @@ class EquationData {
 
         break;
       case CalcState.XxBeA:
-        this.firstOperator = "×";
+        this.firstOperator = '×';
 
-        this.secondOperator = "=";
+        this.secondOperator = '=';
 
         this.variablePosition = 1;
 
@@ -103,11 +103,11 @@ class EquationData {
 
         break;
       case CalcState.gaussianElimination:
-        this.firstOperator = "GE(";
+        this.firstOperator = 'GE(';
 
         this.matrix2 = fullEquation.matrixA;
 
-        this.secondOperator = ") =";
+        this.secondOperator = ') =';
 
         this.matrix3 = viewReduced
           ? fullEquation.matrixD
@@ -117,11 +117,11 @@ class EquationData {
       case CalcState.addMatrix:
         this.matrix1 = fullEquation.matrixA;
 
-        this.firstOperator = "+";
+        this.firstOperator = '+';
 
         this.matrix2 = fullEquation.matrixB;
 
-        this.secondOperator = "=";
+        this.secondOperator = '=';
 
         this.matrix3 = fullEquation.matrixC;
 
@@ -129,11 +129,11 @@ class EquationData {
       case CalcState.subtractMatrix:
         this.matrix1 = fullEquation.matrixA;
 
-        this.firstOperator = "-";
+        this.firstOperator = '-';
 
         this.matrix2 = fullEquation.matrixB;
 
-        this.secondOperator = "=";
+        this.secondOperator = '=';
 
         this.matrix3 = fullEquation.matrixC;
 
@@ -141,11 +141,11 @@ class EquationData {
       case CalcState.AxB:
         this.matrix1 = fullEquation.matrixA;
 
-        this.firstOperator = "×";
+        this.firstOperator = '×';
 
         this.matrix2 = fullEquation.matrixB;
 
-        this.secondOperator = "=";
+        this.secondOperator = '=';
 
         this.matrix3 = fullEquation.matrixC;
 
@@ -153,11 +153,11 @@ class EquationData {
       case CalcState.BxA:
         this.matrix1 = fullEquation.matrixA;
 
-        this.firstOperator = "×";
+        this.firstOperator = '×';
 
         this.matrix2 = fullEquation.matrixB;
 
-        this.secondOperator = "=";
+        this.secondOperator = '=';
 
         this.matrix3 = fullEquation.matrixC;
 
@@ -165,11 +165,11 @@ class EquationData {
       case CalcState.LambdaxA:
         this.scalar = stringify(fullEquation.scalar as math.MathNode);
 
-        this.firstOperator = "×";
+        this.firstOperator = '×';
 
         this.matrix2 = fullEquation.matrixB;
 
-        this.secondOperator = "=";
+        this.secondOperator = '=';
 
         this.matrix3 = fullEquation.matrixC;
 
@@ -177,9 +177,9 @@ class EquationData {
       case CalcState.transpose:
         this.matrix1 = fullEquation.matrixA;
 
-        this.singleMatrixOperator = "T";
+        this.singleMatrixOperator = 'T';
 
-        this.firstOperator = "=";
+        this.firstOperator = '=';
 
         this.matrix2 = fullEquation.matrixB;
 
@@ -187,9 +187,9 @@ class EquationData {
       case CalcState.invert:
         this.matrix1 = fullEquation.matrixA;
 
-        this.singleMatrixOperator = "-1";
+        this.singleMatrixOperator = '-1';
 
-        this.firstOperator = "=";
+        this.firstOperator = '=';
 
         this.matrix2 = fullEquation.matrixB;
 

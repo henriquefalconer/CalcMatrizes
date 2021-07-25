@@ -1,13 +1,13 @@
-import MatrixData from "./MatrixData";
+import MatrixData from './MatrixData';
 
-import ElementDataWithPosition from "../interfaces/ElementDataWithPosition";
-import MatrixColumnWithPosition from "../interfaces/MatrixColumnWithPosition";
-import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";
-import MatrixDimensions from "../interfaces/MatrixDimensions";
+import ElementDataWithPosition from '../interfaces/ElementDataWithPosition';
+import MatrixColumnWithPosition from '../interfaces/MatrixColumnWithPosition';
+import SelectedMatrixElement from '../interfaces/SelectedMatrixElement';
+import MatrixDimensions from '../interfaces/MatrixDimensions';
 
-import { SystemSolutionType } from "./constants";
+import { SystemSolutionType } from './constants';
 
-import * as math from "mathjs";
+import * as math from 'mathjs';
 import {
   add,
   subtract,
@@ -23,7 +23,7 @@ import {
   simplifyInversion,
   hasVariables,
   parseComma,
-} from "./math";
+} from './math';
 
 interface ChangeElementParams extends SelectedMatrixElement {
   matrix: MatrixData;
@@ -52,13 +52,13 @@ interface TransformEquationToVectorFormData {
 class MatrixOperations {
   static print(m: math.MathNode[][]) {
     for (let row of m) {
-      let rowString = "";
+      let rowString = '';
       for (let elem of row) {
         rowString += ` ${elem} `;
       }
       console.log(rowString);
     }
-    console.log("\n");
+    console.log('\n');
   }
 
   static compare(m1: math.MathNode[][], m2: math.MathNode[][]) {
@@ -440,7 +440,7 @@ class MatrixOperations {
         node = m[row][col];
         if (
           node.isOperatorNode &&
-          node.op === "/" &&
+          node.op === '/' &&
           node.args?.[1].isOperatorNode
         ) {
           const div = node.args[1];
@@ -455,7 +455,7 @@ class MatrixOperations {
         multiplyDivs = divs;
         if (
           m[row][col].isOperatorNode &&
-          m[row][col].op === "/" &&
+          m[row][col].op === '/' &&
           m[row][col].args?.[1].isOperatorNode
         ) {
           node = m[row][col].args?.[0] as math.MathNode;

@@ -1,8 +1,8 @@
-import React from "react";
-import { View, TouchableWithoutFeedback } from "react-native";
-import MatrixArea from "./MatrixArea";
-import { useCalculator } from "../hooks/useCalculator";
-import { useOrientation } from "../hooks/useOrientation";
+import React from 'react';
+import { View, TouchableWithoutFeedback } from 'react-native';
+import MatrixArea from './MatrixArea';
+import { useCalculator } from '../hooks/useCalculator';
+import { useOrientation } from '../hooks/useOrientation';
 
 const InfoArea: React.FC = () => {
   const { onPressInfoAreaBackground, fullScreenDeterminant } = useCalculator();
