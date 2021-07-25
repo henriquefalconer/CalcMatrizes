@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { View, FlatList, LayoutChangeEvent } from "react-native";
 import MatrixContainer from "./MatrixContainer";
 import MatrixColumn from "./MatrixColumn";
-import MatrixOperations from "../utilities/MatrixOperations";
+import MatrixOperations from "../utils/MatrixOperations";
 import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";
-import MatrixData from "../utilities/MatrixData";
+import MatrixData from "../utils/MatrixData";
 import * as math from "mathjs";
 
 interface MatrixProps {

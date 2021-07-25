@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import CalculatorButton from "./CalculatorButton";
-import { ButtonType } from "../utilities/constants";
+import { ButtonType } from "../utils/constants";
 
 import { useCalculator } from "../hooks/useCalculator";
 

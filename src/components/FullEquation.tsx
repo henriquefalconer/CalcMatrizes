@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, ScrollView, FlatList } from "react-native";
 import Matrix from "./Matrix";
-import EquationData from "../utilities/EquationData";
-import { CalcState } from "../utilities/constants";
+import EquationData from "../utils/EquationData";
+import { CalcState } from "../utils/constants";
 import FullEquationData from "../interfaces/FullEquationData";
 
 const OPERATORS_WIDTH = 50;

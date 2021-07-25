@@ -11,15 +11,11 @@ import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";
 import MatrixDimensions from "../interfaces/MatrixDimensions";
 import FullEquationData from "../interfaces/FullEquationData";
 
-import MatrixOperations from "../utilities/MatrixOperations";
-import MatrixData from "../utilities/MatrixData";
+import MatrixOperations from "../utils/MatrixOperations";
+import MatrixData from "../utils/MatrixData";
 
-import { subscript, stringifySymbol } from "../utilities/string";
-import {
-  CalcState,
-  SystemSolutionType,
-  Operator,
-} from "../utilities/constants";
+import { subscript, stringifySymbol } from "../utils/string";
+import { CalcState, SystemSolutionType, Operator } from "../utils/constants";
 
 import * as math from "mathjs";
 import {
@@ -33,7 +29,7 @@ import {
   hasVariables,
   parseComma,
   zero,
-} from "../utilities/math";
+} from "../utils/math";
 
 interface MatrixHistory {
   history: Array<MatrixData>;

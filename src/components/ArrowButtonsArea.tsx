@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useCalculator } from "../hooks/useCalculator";
 import { useOrientation } from "../hooks/useOrientation";
 import MatrixDimensions from "../interfaces/MatrixDimensions";
-import { CalcState } from "../utilities/constants";
+import { CalcState } from "../utils/constants";
 import ArrowButton from "./ArrowButton";
 
 interface ArrowButtonsAreaProps {

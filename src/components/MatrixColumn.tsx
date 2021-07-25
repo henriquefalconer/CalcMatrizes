@@ -4,8 +4,8 @@ import * as math from "mathjs";
 
 import { useCalculator } from "../hooks/useCalculator";
 
-import MatrixData from "../utilities/MatrixData";
-import { stringify } from "../utilities/math";
+import MatrixData from "../utils/MatrixData";
+import { stringify } from "../utils/math";
 
 import ElementDataWithPosition from "../interfaces/ElementDataWithPosition";
 import SelectedMatrixElement from "../interfaces/SelectedMatrixElement";

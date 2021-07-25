@@ -1,14 +1,14 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import Matrix from "./Matrix";
-import { CalcState, SystemSolutionType } from "../utilities/constants";
+import { CalcState, SystemSolutionType } from "../utils/constants";
 import ArrowButtonsArea from "./ArrowButtonsArea";
 import FullEquation from "./FullEquation";
 
 import { useCalculator } from "../hooks/useCalculator";
 import { useOrientation } from "../hooks/useOrientation";
 import * as math from "mathjs";
-import { stringify } from "../utilities/math";
+import { stringify } from "../utils/math";
 
 const BUTTON_AREAS_CROSS_WIDTH = 70;
 
