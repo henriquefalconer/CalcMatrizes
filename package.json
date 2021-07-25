@@ -7,7 +7,10 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "release": "yarn build:ios && react-native run-ios --configuration Release",
+    "build:ios": "react-native bundle --entry-file='index.ts' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'",
+    "testflight": "yarn build:ios && cd ios && fastlane beta && cd .."
   },
   "dependencies": {
     "react": "17.0.1",
