@@ -70,12 +70,6 @@ const MatrixColumn = ({
 
   const formatElement = useCallback(
     ({ number, row, column }: ElementDataWithPosition) => {
-      // console.log({
-      //     number,
-      //     selected: isElementSelected({ row, column }),
-      //     rowAndColumn: { row, column },
-      //     editableOperatorNumber
-      // })
       return stringify(
         isElementSelected({ row, column }) && editableOperatorNumber
           ? editableOperatorNumber
