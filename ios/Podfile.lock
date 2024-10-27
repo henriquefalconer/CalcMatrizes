@@ -1242,6 +1242,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-change-orientation (0.1.0):
+    - React
   - React-nativeconfig (0.76.0)
   - React-NativeModulesApple (0.76.0):
     - glog
@@ -1550,6 +1552,7 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - react-native-change-orientation (from `../node_modules/react-native-change-orientation`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -1655,6 +1658,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-change-orientation:
+    :path: "../node_modules/react-native-change-orientation"
   React-nativeconfig:
     :path: "../node_modules/react-native/ReactCommon"
   React-NativeModulesApple:
@@ -1748,6 +1753,7 @@ SPEC CHECKSUMS:
   React-logger: d1a89c7d9b3c847eb63eb85724c54b06cae2c939
   React-Mapbuffer: b0b4ace5b62b269f3838df26ba2d8b4f39f90783
   React-microtasksnativemodule: 0b7db04c18f6bb01ef5b1f9007c3229abecc35dd
+  react-native-change-orientation: 545ac245426bd6240367329508490b28d923e8e9
   React-nativeconfig: 72c10ff34863148ef90df9c9c8eacba99d2faaaa
   React-NativeModulesApple: 5ec49182fa000b2215ee1bed03e2867f8323ccf5
   React-perflogger: 073c7a8a436b3fe724f1df34e9d1f3db1d25fe74
@@ -1778,6 +1784,6 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: f8ec45ce98bba1bc93dd28f2ee37215180e6d2b6
 
-PODFILE CHECKSUM: 29f54c32a2cb36270a73c3be8eb648c7cc0434d9
+PODFILE CHECKSUM: 1b4a210b94f8de29750bdf06068a6bf09f690958
 
 COCOAPODS: 1.15.2
