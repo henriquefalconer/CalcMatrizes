@@ -14,8 +14,9 @@
   },
   "dependencies": {
     "mathjs": "https://github.com/henriquefalconer/mathjs.git#fix/rationalize",
+    "react": "18.2.0",
     "react-native": "0.76.0",
-    "react-native-change-orientation": "^0.1.0",
+    "react-native-change-orientation": "^0.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
